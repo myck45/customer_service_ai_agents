@@ -13,14 +13,14 @@ type RestaurantRepositoryImpl struct {
 }
 
 // CreateRestaurant implements RestaurantRepository.
-func (r *RestaurantRepositoryImpl) CreateRestaurant(restaurant *models.Restaurant) error {
+func (r *RestaurantRepositoryImpl) CreateRestaurant(restaurant *models.Restaurant) (*models.Restaurant, error) {
 	result := r.db.Create(restaurant)
 	if result.Error != nil {
 		logrus.WithError(result.Error).Error("Error creating restaurant")
-		return fmt.Errorf("error creating restaurant")
+		return nil, fmt.Errorf("error creating restaurant")
 	}
 
-	return nil
+	return restaurant, nil
 }
 
 // DeleteRestaurant implements RestaurantRepository.
