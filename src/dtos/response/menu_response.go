@@ -6,6 +6,7 @@ type MenuResponse struct {
 	ItemName     string `json:"item_name"`
 	Description  string `json:"description"`
 	Price        int    `json:"price"`
+	Likes        int    `json:"likes"`
 	CreatedAt    string `json:"created_at"`
 	UpdatedAt    string `json:"updated_at"`
 }

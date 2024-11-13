@@ -7,7 +7,7 @@ import (
 
 type MenuService interface {
 	// Create
-	CreateMenu(req *request.CreateMenuReq) (*response.MenuResponse, error)
+	CreateMenu(req *request.CreateMenuReq) error
 
 	// Read operations
 	GetMenuByID(id uint) (*response.MenuResponse, error)
