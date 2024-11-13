@@ -5,5 +5,6 @@ type MenuSearchResponse struct {
 	ItemName    string  `json:"item_name"`
 	Price       int     `json:"price"`
 	Description string  `json:"description"`
+	Likes       int     `json:"likes"`
 	Similarity  float32 `json:"similarity"`
 }

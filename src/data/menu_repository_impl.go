@@ -76,6 +76,7 @@ func (m *MenuRepositoryImpl) SemanticSearchMenu(queryEmbedding []float32, simila
 			item_name,
 			price,
 			description,
+			likes,
 			embedding <#> ? AS similarity
 		`, queryEmbedding).
 		Where("restaurant_id = ?", restaurantID).
