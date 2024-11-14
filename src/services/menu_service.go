@@ -13,8 +13,8 @@ type MenuService interface {
 	GetMenuByID(id uint) (*response.MenuResponse, error)
 	GetAllMenus() (*response.MenuListResponse, error)
 
-	// Semantic search - note: query text instead of vector at service level
-	SemanticSearchMenu(query string, similarityThreshold float32, matchCount int) (*response.MenuListResponse, error)
+	// Semantic search
+	SemanticSearchMenu(req *request.SemanticSearchReq) ([]response.MenuSearchResponse, error)
 
 	// Update
 	UpdateMenu(id uint, req *request.UpdateMenuReq) (*response.MenuResponse, error)

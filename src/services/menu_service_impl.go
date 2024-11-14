@@ -17,6 +17,40 @@ type MenuServiceImpl struct {
 	menuRepo data.MenuRepository
 }
 
+// SemanticSearchMenu implements MenuService.
+func (m *MenuServiceImpl) SemanticSearchMenu(req *request.SemanticSearchReq) ([]response.MenuSearchResponse, error) {
+
+	if req == nil {
+		logrus.Error("Invalid null request")
+		return nil, errors.New("invalid null request")
+	}
+
+	queryEmbedding, err := m.bot.GenerateEmbedding(req.Query)
+	if err != nil {
+		logrus.WithError(err).Error("Error generating embedding")
+		return nil, err
+	}
+
+	menus, err := m.menuRepo.SemanticSearchMenu(queryEmbedding, req.SimilarityThreshold, req.MatchCount, req.RestaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("Error fetching menus")
+		return nil, err
+	}
+
+	menuList := make([]response.MenuSearchResponse, 0, len(menus))
+	for _, menu := range menus {
+		menuList = append(menuList, response.MenuSearchResponse{
+			ID:          menu.ID,
+			ItemName:    menu.ItemName,
+			Description: menu.Description,
+			Price:       menu.Price,
+			Likes:       menu.Likes,
+		})
+	}
+
+	return menuList, nil
+}
+
 // CreateMenu implements MenuService.
 func (m *MenuServiceImpl) CreateMenu(req *request.CreateMenuReq) error {
 	if req == nil {
@@ -109,11 +143,6 @@ func (m *MenuServiceImpl) GetMenuByID(id uint) (*response.MenuResponse, error) {
 		Price:        menu.Price,
 		Likes:        menu.Likes,
 	}, nil
-}
-
-// SemanticSearchMenu implements MenuService.
-func (m *MenuServiceImpl) SemanticSearchMenu(query string, similarityThreshold float32, matchCount int) (*response.MenuListResponse, error) {
-	panic("unimplemented")
 }
 
 // UpdateMenu implements MenuService.
