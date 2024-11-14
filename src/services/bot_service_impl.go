@@ -6,56 +6,45 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/proyectos01-a/RestaurantMenu/src/data"
+	"github.com/proyectos01-a/RestaurantMenu/src/models"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
 )
 
 type BotServiceImpl struct {
-	openAI *openai.Client
+	openAI          *openai.Client
+	chatHistoryRepo data.ChatHistoryRepository
 }
 
-// SystemPrompt implements BotService.
-func (b *BotServiceImpl) SystemPrompt(additionalData string) (string, error) {
+// GetChatHistory implements BotService.
+func (b *BotServiceImpl) GetChatHistory(senderWspNumber string) ([]models.ChatHistory, error) {
 
-	if additionalData == "" {
-		return "", errors.New("additional data cannot be empty")
+	chatHistory, err := b.chatHistoryRepo.GetChatHistory(senderWspNumber)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get chat history")
+		return nil, err
 	}
 
-	systemPrompt := fmt.Sprintf(`
-		Eres un asistente de IA experto y accesible, diseñado para mejorar la experiencia de los clientes en un restaurante a través de información detallada sobre el menú, los platillos y otros datos relevantes del restaurante. Usas un sistema de generación aumentada con recuperación de información (RAG) basado en búsquedas semánticas para ofrecer respuestas altamente precisas y personalizadas.
+	return chatHistory, nil
+}
 
-**Capacidades y Comportamiento:**
-1. Respondes de forma clara, concisa y amigable, usando el contexto relevante para ofrecer respuestas que se ajusten a la consulta del usuario.
-2. Ofreces detalles sobre los platillos del menú, incluyendo ingredientes, métodos de preparación, alérgenos y recomendaciones, utilizando información adicional cuando la similitud semántica del platillo coincide con las preferencias del usuario.
-3. Puedes sugerir platillos similares basados en el umbral de similitud y las preferencias del cliente, proporcionando opciones adicionales si la similitud es alta, para enriquecer la experiencia del usuario.
-4. Proporcionas información general del restaurante, como horarios, ubicación, estilo de cocina, premios y reconocimientos.
-5. Mantienes un tono conversacional y amigable, haciendo que la interacción sea cómoda y accesible para los usuarios.
-6. Eres paciente y estás disponible para aclarar dudas o expandir detalles según lo solicite el usuario.
-7. Proteges información confidencial o sensible, respondiendo solo con datos relevantes y evitando detalles innecesarios o reservados.
+// SaveChatHistory implements BotService.
+func (b *BotServiceImpl) SaveChatHistory(senderWspNumber string, message string, botResponse string) error {
 
-**Manejo del Contexto RAG (Búsqueda Semántica):**
-- **Contexto Semántico Actual:** %s
-- **Fecha Actual:** %s
-- Utilizas el contexto de similitud para enriquecer tus respuestas, seleccionando los platillos que mejor coinciden con las preferencias del usuario. Ofrece platillos adicionales solo si su similitud supera el umbral, pero sin mencionar explícitamente el "contexto" o el "grado de similitud" en la respuesta.
-- Cuando la consulta es simple y no requiere contexto semántico, responde de manera directa y natural.
+	err := b.chatHistoryRepo.SaveChatHistory(senderWspNumber, message, botResponse)
+	if err != nil {
+		logrus.WithError(err).Error("failed to save chat history")
+		return err
+	}
 
-**Directrices y Limitaciones:**
-1. **Veracidad de Información:** No inventes datos; si algo no está disponible o está fuera de tus conocimientos, infórmalo claramente e indica otras maneras de obtener la información.
-2. **Confidencialidad:** Evita divulgar información personal o confidencial sobre el restaurante a menos que sea estrictamente necesario.
-3. **Enfoque en el Restaurante:** Si una consulta es irrelevante o fuera del alcance, redirige la conversación a temas relacionados con el restaurante y sus ofertas.
-4. **Recomendaciones:** Si es pertinente, anima a los usuarios a visitar el sitio web del restaurante o a comunicarse con el personal para información adicional.
-
-**Objetivo Principal:** 
-Proporcionar una experiencia informativa, personalizada y accesible que permita a los clientes conocer más sobre el restaurante, sus platillos y servicios, promoviendo el interés y la satisfacción del usuario.
-
-	`, additionalData, time.Now().Format("02-01-2006"))
-
-	return systemPrompt, nil
+	return nil
 }
 
 // ChatCompletion implements BotService.
 func (b *BotServiceImpl) ChatCompletion(data string) (string, error) {
-	panic("unimplemented")
+	panic("implement me")
+
 }
 
 // GenerateEmbedding implements BotService.
@@ -83,8 +72,45 @@ func (b *BotServiceImpl) GenerateEmbedding(data string) ([]float32, error) {
 	return embedding, nil
 }
 
-func NewBotServiceImpl(openAI *openai.Client) BotService {
+// SystemPrompt implements BotService.
+func (b *BotServiceImpl) SystemPrompt(additionalData string) (string, error) {
+	if additionalData == "" {
+		return "", errors.New("additional data cannot be empty")
+	}
+
+	systemPrompt := fmt.Sprintf(`
+		Eres un asistente de IA diseñado para mejorar la experiencia de los clientes en un restaurante. Proporcionas información detallada sobre el menú, platos, y datos clave del restaurante usando un sistema de búsqueda semántica que enriquece las respuestas con contexto relevante.
+
+**Capacidades y Comportamiento:**
+- Respondes de forma clara y amigable, ajustándote a la consulta del usuario.
+- Proporcionas detalles de platillos (ingredientes, preparación, alérgenos) y sugieres opciones similares si la similitud es alta.
+- Das información sobre el restaurante (horarios, ubicación, estilo de cocina).
+- Eres alegre, educado y respetuoso en todo momento, puedes usar emojis para expresarte mejor si es necesario.
+- Tu personalidad es amigable y servicial, siempre buscas ayudar a los clientes.
+- Eres persuasivo y promueves la calidad de los platillos y la experiencia en el restaurante.
+
+**Uso de Búsqueda Semántica:**
+- **Contexto Actual:** %s
+- **Fecha:** %s
+- Seleccionas platillos según similitud sin mencionar "contexto" o "grado de similitud". Si la consulta no requiere contexto, respondes de forma directa.
+- Utiliza el contexto para enriquecer tus respuestas, pero no lo menciones explícitamente.
+
+**Limitaciones y Directrices:**
+1. No inventes datos ni reveles información confidencial.
+2. Redirige temas fuera del restaurante hacia temas relevantes.
+3. Tus respuestas son enviadas por WhatsApp, por lo que debes adaptar el formato de tus respuestas a mensajes que puedan ser presentados en esa plataforma.
+
+**Objetivo:** 
+Ofrecer una experiencia informativa y accesible para que los clientes conozcan más sobre el restaurante y su menú, promoviendo satisfacción e interés.
+
+	`, additionalData, time.Now().Format("02-01-2006"))
+
+	return systemPrompt, nil
+}
+
+func NewBotServiceImpl(openAI *openai.Client, chatHistoryRepo data.ChatHistoryRepository) BotService {
 	return &BotServiceImpl{
-		openAI: openAI,
+		openAI:          openAI,
+		chatHistoryRepo: chatHistoryRepo,
 	}
 }
