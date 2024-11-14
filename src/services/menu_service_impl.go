@@ -21,19 +21,19 @@ type MenuServiceImpl struct {
 func (m *MenuServiceImpl) SemanticSearchMenu(req *request.SemanticSearchReq) ([]response.MenuSearchResponse, error) {
 
 	if req == nil {
-		logrus.Error("Invalid null request")
+		logrus.Error("*** [SemanticSearchMenu] Invalid null request")
 		return nil, errors.New("invalid null request")
 	}
 
 	queryEmbedding, err := m.bot.GenerateEmbedding(req.Query)
 	if err != nil {
-		logrus.WithError(err).Error("Error generating embedding")
+		logrus.WithError(err).Error("*** [SemanticSearchMenu] Error generating embedding")
 		return nil, err
 	}
 
 	menus, err := m.menuRepo.SemanticSearchMenu(queryEmbedding, req.SimilarityThreshold, req.MatchCount, req.RestaurantID)
 	if err != nil {
-		logrus.WithError(err).Error("Error fetching menus")
+		logrus.WithError(err).Error("*** [SemanticSearchMenu] Error fetching menus")
 		return nil, err
 	}
 
@@ -54,13 +54,13 @@ func (m *MenuServiceImpl) SemanticSearchMenu(req *request.SemanticSearchReq) ([]
 // CreateMenu implements MenuService.
 func (m *MenuServiceImpl) CreateMenu(req *request.CreateMenuReq) error {
 	if req == nil {
-		logrus.Error("Invalid null request")
+		logrus.Error("*** [CreateMenu] Invalid null request")
 		return errors.New("invalid null request")
 	}
 
 	reqJSON, err := json.Marshal(req)
 	if err != nil {
-		logrus.WithError(err).Error("Error marshalling request")
+		logrus.WithError(err).Error("*** [CreateMenu] Error marshalling request")
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (m *MenuServiceImpl) CreateMenu(req *request.CreateMenuReq) error {
 
 	embedding, err := m.bot.GenerateEmbedding(reqString)
 	if err != nil {
-		logrus.WithError(err).Error("Error generating embedding")
+		logrus.WithError(err).Error("*** [CreateMenu] Error generating embedding")
 		return err
 	}
 
@@ -83,7 +83,7 @@ func (m *MenuServiceImpl) CreateMenu(req *request.CreateMenuReq) error {
 
 	err = m.menuRepo.CreateMenu(menuModel)
 	if err != nil {
-		logrus.WithError(err).Error("Error creating menu")
+		logrus.WithError(err).Error("*** [CreateMenu] Error creating menu")
 		return err
 	}
 
@@ -96,6 +96,7 @@ func (m *MenuServiceImpl) DeleteMenu(id uint) error {
 
 	err := m.menuRepo.DeleteMenu(id)
 	if err != nil {
+		logrus.WithError(err).Error("*** [DeleteMenu] Error deleting menu")
 		return err
 	}
 
@@ -107,6 +108,7 @@ func (m *MenuServiceImpl) GetAllMenus() (*response.MenuListResponse, error) {
 
 	menus, err := m.menuRepo.GetAllMenus()
 	if err != nil {
+		logrus.WithError(err).Error("*** [GetAllMenus] Error fetching menus")
 		return nil, err
 	}
 
@@ -132,6 +134,7 @@ func (m *MenuServiceImpl) GetMenuByID(id uint) (*response.MenuResponse, error) {
 
 	menu, err := m.menuRepo.GetMenuByID(id)
 	if err != nil {
+		logrus.WithError(err).Error("*** [GetMenuByID] Error fetching menu")
 		return nil, err
 	}
 
@@ -149,47 +152,47 @@ func (m *MenuServiceImpl) GetMenuByID(id uint) (*response.MenuResponse, error) {
 func (m *MenuServiceImpl) UpdateMenu(id uint, req *request.UpdateMenuReq) (*response.MenuResponse, error) {
 
 	if req == nil {
-		logrus.Error("Invalid null request")
+		logrus.Error("*** [UpdateMenu] Invalid null request")
 		return nil, errors.New("invalid null request")
 	}
 
 	menu, err := m.menuRepo.GetMenuByID(id)
 	if err != nil {
-		logrus.WithError(err).Error("Error fetching menu")
+		logrus.WithError(err).Error("*** [UpdateMenu] Error fetching menu")
 		return nil, err
 	}
 
 	if req.ItemName != "" {
 		menu.ItemName = req.ItemName
 	} else {
-		logrus.Error("Item name cannot be empty")
+		logrus.Error("*** [UpdateMenu] Item name cannot be empty")
 		return nil, errors.New("item name cannot be empty")
 	}
 
 	if req.Description != "" {
 		menu.Description = req.Description
 	} else {
-		logrus.Error("Description cannot be empty")
+		logrus.Error("*** [UpdateMenu] Description cannot be empty")
 		return nil, errors.New("description cannot be empty")
 	}
 
 	if req.Price != 0 {
 		menu.Price = req.Price
 	} else {
-		logrus.Error("Price cannot be 0")
+		logrus.Error("*** [UpdateMenu] Price cannot be 0")
 		return nil, errors.New("price cannot be 0")
 	}
 
 	if req.Likes != 0 {
 		menu.Likes = req.Likes
 	} else {
-		logrus.Error("Likes cannot be 0")
+		logrus.Error("*** [UpdateMenu] Likes cannot be 0")
 		return nil, errors.New("likes cannot be 0")
 	}
 
 	err = m.menuRepo.UpdateMenu(menu)
 	if err != nil {
-		logrus.WithError(err).Error("Error updating menu")
+		logrus.WithError(err).Error("*** [UpdateMenu] Error updating menu")
 		return nil, err
 	}
 
