@@ -49,6 +49,9 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 // TwilioResponse implements BotService.
 func (b *BotServiceImpl) TwilioResponse(userWspNumber string, botWspNumber string, botResponse string) error {
 
+	userWspNumber = fmt.Sprintf("whatsapp:%s", userWspNumber)
+	botWspNumber = fmt.Sprintf("whatsapp:%s", botWspNumber)
+
 	params := &twilioApi.CreateMessageParams{}
 	params.SetTo(userWspNumber)
 	params.SetFrom(botWspNumber)
