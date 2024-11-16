@@ -9,6 +9,17 @@ import (
 )
 
 type BotService interface {
+
+	// Bot CRUD methods
+	GetBotByID(botID uint) (*response.BotResponse, error)
+	GetBotByRestaurantID(restaurantID uint) ([]response.BotResponse, error)
+	GetBotByWspNumber(wspNumber string) (*response.BotResponse, error)
+	GetAllBots() ([]response.BotResponse, error)
+	CreateBot(bot request.CreateBotReq) (*response.BotResponse, error)
+	UpdateBot(botID uint, bot request.UpdateBotReq) (*response.BotResponse, error)
+	DeleteBotByID(botID uint) error
+
+	// Bot response methods
 	GenerateEmbedding(data string) ([]float32, error)
 	GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage) (string, error)
 	BotResponse(chat request.TwilioWebhook) error

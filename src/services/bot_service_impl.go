@@ -25,6 +25,235 @@ type BotServiceImpl struct {
 	menuRepo        data.MenuRepository
 }
 
+// CreateBot implements BotService.
+func (b *BotServiceImpl) CreateBot(bot request.CreateBotReq) (*response.BotResponse, error) {
+
+	// Create the bot
+	newBot := &models.Bot{
+		Name:         bot.Name,
+		WspNumber:    bot.WspNumber,
+		RestaurantID: bot.RestaurantID,
+	}
+
+	// Save the bot
+	if err := b.botRepo.SaveBot(newBot); err != nil {
+		logrus.WithError(err).Error("failed to save bot")
+		return nil, fmt.Errorf("failed to save bot: %v", err)
+	}
+
+	// Create the response
+	botResponse := &response.BotResponse{
+		ID:           newBot.ID,
+		Name:         newBot.Name,
+		WspNumber:    newBot.WspNumber,
+		RestaurantID: newBot.RestaurantID,
+	}
+
+	return botResponse, nil
+}
+
+// DeleteBotByID implements BotService.
+func (b *BotServiceImpl) DeleteBotByID(botID uint) error {
+
+	// Delete the bot
+	if err := b.botRepo.DeleteBotByID(botID); err != nil {
+		logrus.WithError(err).Error("failed to delete bot")
+		return fmt.Errorf("failed to delete bot: %v", err)
+	}
+
+	return nil
+}
+
+// GetAllBots implements BotService.
+func (b *BotServiceImpl) GetAllBots() ([]response.BotResponse, error) {
+
+	// Get all bots
+	bots, err := b.botRepo.GetAllBots()
+	if err != nil {
+		logrus.WithError(err).Error("failed to get all bots")
+		return nil, fmt.Errorf("failed to get all bots: %v", err)
+	}
+
+	// Create the response
+	var botResponses []response.BotResponse
+	for _, bot := range bots {
+		botResponses = append(botResponses, response.BotResponse{
+			ID:           bot.ID,
+			Name:         bot.Name,
+			WspNumber:    bot.WspNumber,
+			RestaurantID: bot.RestaurantID,
+		})
+	}
+
+	return botResponses, nil
+}
+
+// GetBotByID implements BotService.
+func (b *BotServiceImpl) GetBotByID(botID uint) (*response.BotResponse, error) {
+
+	// Get the bot
+	bot, err := b.botRepo.GetBotByID(botID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get bot")
+		return nil, fmt.Errorf("failed to get bot: %v", err)
+	}
+
+	// Create the response
+	botResponse := &response.BotResponse{
+		ID:           bot.ID,
+		Name:         bot.Name,
+		WspNumber:    bot.WspNumber,
+		RestaurantID: bot.RestaurantID,
+	}
+
+	return botResponse, nil
+}
+
+// GetBotByRestaurantID implements BotService.
+func (b *BotServiceImpl) GetBotByRestaurantID(restaurantID uint) ([]response.BotResponse, error) {
+
+	// Get the bots
+	bots, err := b.botRepo.GetBotByRestaurantID(restaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get bot")
+		return nil, fmt.Errorf("failed to get bot: %v", err)
+	}
+
+	// Create the response
+	var botResponses []response.BotResponse
+	for _, bot := range bots {
+		botResponses = append(botResponses, response.BotResponse{
+			ID:           bot.ID,
+			Name:         bot.Name,
+			WspNumber:    bot.WspNumber,
+			RestaurantID: bot.RestaurantID,
+		})
+	}
+
+	return botResponses, nil
+}
+
+// GetBotByWspNumber implements BotService.
+func (b *BotServiceImpl) GetBotByWspNumber(wspNumber string) (*response.BotResponse, error) {
+
+	// Get the bot
+	bot, err := b.botRepo.GetBotByWspNumber(wspNumber)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get bot")
+		return nil, fmt.Errorf("failed to get bot: %v", err)
+	}
+
+	// Create the response
+	botResponse := &response.BotResponse{
+		ID:           bot.ID,
+		Name:         bot.Name,
+		WspNumber:    bot.WspNumber,
+		RestaurantID: bot.RestaurantID,
+	}
+
+	return botResponse, nil
+}
+
+// UpdateBot implements BotService.
+func (b *BotServiceImpl) UpdateBot(botID uint, bot request.UpdateBotReq) (*response.BotResponse, error) {
+
+	// Get the bot
+	botToUpdate, err := b.botRepo.GetBotByID(botID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get bot")
+		return nil, fmt.Errorf("failed to get bot: %v", err)
+	}
+
+	// Update the bot
+	botToUpdate.Name = bot.Name
+	botToUpdate.WspNumber = bot.WspNumber
+
+	// Save the bot
+	if err := b.botRepo.SaveBot(botToUpdate); err != nil {
+		logrus.WithError(err).Error("failed to save bot")
+		return nil, fmt.Errorf("failed to save bot: %v", err)
+	}
+
+	// Create the response
+	botResponse := &response.BotResponse{
+		ID:           botToUpdate.ID,
+		Name:         botToUpdate.Name,
+		WspNumber:    botToUpdate.WspNumber,
+		RestaurantID: botToUpdate.RestaurantID,
+	}
+
+	return botResponse, nil
+}
+
+// BotResponse implements BotService.
+func (b *BotServiceImpl) BotResponse(chat request.TwilioWebhook) error {
+
+	var similarityThreshold float32 = 0.5 // minimum similarity threshold for the semantic search
+	var matchCount int = 5                // is the number of menu items that the query will return
+	var botWspNumber string = chat.To     // is the WhatsApp number of the bot
+	var userMessage string = chat.Body    // is the message sent by the user
+	var userWspNumber string = chat.From  // is the WhatsApp number of the user
+
+	// Get the bot by the WhatsApp number
+	bot, err := b.botRepo.GetBotByWspNumber(botWspNumber)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get bot")
+		return fmt.Errorf("failed to get bot: %v", err)
+	}
+
+	restaurantID := bot.RestaurantID
+
+	// Generate the embedding for the user message
+	userMsgEmbedding, err := b.GenerateEmbedding(userMessage)
+	if err != nil {
+		logrus.WithError(err).Error("failed to generate embedding")
+		return fmt.Errorf("failed to generate embedding: %v", err)
+	}
+
+	// Search the menu using the semantic context
+	semanticContext, err := b.menuRepo.SemanticSearchMenu(userMsgEmbedding, similarityThreshold, matchCount, restaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to search menu")
+		return fmt.Errorf("failed to search menu: %v", err)
+	}
+
+	// Prepare the chat messages
+	messages, err := b.PrepareChatMessages(chat, semanticContext, restaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to prepare chat messages")
+		return fmt.Errorf("failed to prepare chat messages: %v", err)
+	}
+
+	// Generate the bot response
+	botResponse, err := b.GenerateBotResponse(context.Background(), messages)
+	if err != nil {
+		logrus.WithError(err).Error("failed to generate bot response")
+		return fmt.Errorf("failed to generate bot response: %v", err)
+	}
+
+	// Send the bot response through Twilio
+	if err := b.TwilioResponse(userWspNumber, botWspNumber, botResponse); err != nil {
+		logrus.WithError(err).Error("failed to send response")
+		return fmt.Errorf("failed to send response: %v", err)
+	}
+
+	// Save the chat history
+	err = b.chatHistoryRepo.SaveChat(&models.ChatHistory{
+		SenderWspNumber: userWspNumber,
+		BotWspNumber:    botWspNumber,
+		Message:         userMessage,
+		BotResponse:     botResponse,
+		RestaurantID:    restaurantID,
+	})
+	if err != nil {
+		logrus.WithError(err).Error("failed to save chat")
+		return fmt.Errorf("failed to save chat: %v", err)
+	}
+
+	return nil
+
+}
+
 // GenerateBotResponse implements BotService.
 func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage) (string, error) {
 	// Create the chat completion request
@@ -116,74 +345,6 @@ func (b *BotServiceImpl) PrepareChatMessages(chat request.TwilioWebhook, semanti
 	})
 
 	return messages, nil
-}
-
-// BotResponse implements BotService.
-func (b *BotServiceImpl) BotResponse(chat request.TwilioWebhook) error {
-
-	var similarityThreshold float32 = 0.5 // minimum similarity threshold for the semantic search
-	var matchCount int = 5                // is the number of menu items that the query will return
-	var botWspNumber string = chat.To     // is the WhatsApp number of the bot
-	var userMessage string = chat.Body    // is the message sent by the user
-	var userWspNumber string = chat.From  // is the WhatsApp number of the user
-
-	// Get the bot by the WhatsApp number
-	bot, err := b.botRepo.GetBotByWspNumber(botWspNumber)
-	if err != nil {
-		logrus.WithError(err).Error("failed to get bot")
-		return fmt.Errorf("failed to get bot: %v", err)
-	}
-
-	restaurantID := bot.RestaurantID
-
-	// Generate the embedding for the user message
-	userMsgEmbedding, err := b.GenerateEmbedding(userMessage)
-	if err != nil {
-		logrus.WithError(err).Error("failed to generate embedding")
-		return fmt.Errorf("failed to generate embedding: %v", err)
-	}
-
-	// Search the menu using the semantic context
-	semanticContext, err := b.menuRepo.SemanticSearchMenu(userMsgEmbedding, similarityThreshold, matchCount, restaurantID)
-	if err != nil {
-		logrus.WithError(err).Error("failed to search menu")
-		return fmt.Errorf("failed to search menu: %v", err)
-	}
-
-	messages, err := b.PrepareChatMessages(chat, semanticContext, restaurantID)
-	if err != nil {
-		logrus.WithError(err).Error("failed to prepare chat messages")
-		return fmt.Errorf("failed to prepare chat messages: %v", err)
-	}
-
-	// Generate the bot response
-	botResponse, err := b.GenerateBotResponse(context.Background(), messages)
-	if err != nil {
-		logrus.WithError(err).Error("failed to generate bot response")
-		return fmt.Errorf("failed to generate bot response: %v", err)
-	}
-
-	// Send the bot response
-	if err := b.TwilioResponse(userWspNumber, botWspNumber, botResponse); err != nil {
-		logrus.WithError(err).Error("failed to send response")
-		return fmt.Errorf("failed to send response: %v", err)
-	}
-
-	// Save the chat history
-	err = b.chatHistoryRepo.SaveChat(&models.ChatHistory{
-		SenderWspNumber: userWspNumber,
-		BotWspNumber:    botWspNumber,
-		Message:         userMessage,
-		BotResponse:     botResponse,
-		RestaurantID:    restaurantID,
-	})
-	if err != nil {
-		logrus.WithError(err).Error("failed to save chat")
-		return fmt.Errorf("failed to save chat: %v", err)
-	}
-
-	return nil
-
 }
 
 // GenerateEmbedding implements BotService.
