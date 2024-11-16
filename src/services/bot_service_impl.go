@@ -2,48 +2,184 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/proyectos01-a/RestaurantMenu/src/data"
+	"github.com/proyectos01-a/RestaurantMenu/src/dtos/request"
+	"github.com/proyectos01-a/RestaurantMenu/src/dtos/response"
 	"github.com/proyectos01-a/RestaurantMenu/src/models"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
+	"github.com/twilio/twilio-go"
+	twilioApi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
 type BotServiceImpl struct {
 	openAI          *openai.Client
+	twilio          *twilio.RestClient
 	chatHistoryRepo data.ChatHistoryRepository
+	botRepo         data.BotRepository
+	menuRepo        data.MenuRepository
 }
 
-// GetChatHistory implements BotService.
-func (b *BotServiceImpl) GetChatHistory(senderWspNumber string) ([]models.ChatHistory, error) {
+// GenerateBotResponse implements BotService.
+func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage) (string, error) {
+	// Create the chat completion request
+	res, err := b.openAI.CreateChatCompletion(
+		ctx,
+		openai.ChatCompletionRequest{
+			Model:    openai.GPT4oMini,
+			Messages: messages,
+		},
+	)
+	if err != nil {
+		logrus.WithError(err).Error("failed to create chat completion")
+		return "", err
+	}
 
-	chatHistory, err := b.chatHistoryRepo.GetChatHistory(senderWspNumber)
+	// Get the bot response
+	botResponse := res.Choices[0].Message.Content
+
+	return botResponse, nil
+}
+
+// TwilioResponse implements BotService.
+func (b *BotServiceImpl) TwilioResponse(userWspNumber string, botWspNumber string, botResponse string) error {
+
+	params := &twilioApi.CreateMessageParams{}
+	params.SetTo(userWspNumber)
+	params.SetFrom(botWspNumber)
+	params.SetBody(botResponse)
+
+	resp, err := b.twilio.Api.CreateMessage(params)
+	if err != nil {
+		logrus.WithError(err).Error("failed to send message")
+		return fmt.Errorf("failed to send message: %v", err)
+	}
+
+	logrus.WithField("response", resp).Info("message sent")
+
+	return nil
+}
+
+// PrepareChatMessages implements BotService.
+func (b *BotServiceImpl) PrepareChatMessages(chat request.TwilioWebhook, semanticContext []response.MenuSearchResponse, restaurantID uint) ([]openai.ChatCompletionMessage, error) {
+
+	var senderWspNumber string = chat.From
+	var botWspNumber string = chat.To
+
+	contextStr, err := json.Marshal(semanticContext)
+	if err != nil {
+		logrus.WithError(err).Error("failed to marshal semantic context")
+		return nil, err
+	}
+
+	systemPrompt, err := b.SystemPrompt(string(contextStr))
+	if err != nil {
+		logrus.WithError(err).Error("failed to generate system prompt")
+		return nil, err
+	}
+
+	chatHistory, err := b.chatHistoryRepo.GetChatHistory(senderWspNumber, botWspNumber, restaurantID)
 	if err != nil {
 		logrus.WithError(err).Error("failed to get chat history")
 		return nil, err
 	}
 
-	return chatHistory, nil
+	messages := []openai.ChatCompletionMessage{
+		{
+			Role:    "system",
+			Content: systemPrompt,
+		},
+	}
+
+	for _, chat := range chatHistory {
+		messages = append(messages, openai.ChatCompletionMessage{
+			Role:    "user",
+			Content: chat.Message,
+		})
+		messages = append(messages, openai.ChatCompletionMessage{
+			Role:    "assistant",
+			Content: chat.BotResponse,
+		})
+	}
+
+	messages = append(messages, openai.ChatCompletionMessage{
+		Role:    "user",
+		Content: chat.Body,
+	})
+
+	return messages, nil
 }
 
-// SaveChatHistory implements BotService.
-func (b *BotServiceImpl) SaveChatHistory(senderWspNumber string, message string, botResponse string) error {
+// BotResponse implements BotService.
+func (b *BotServiceImpl) BotResponse(chat request.TwilioWebhook) error {
 
-	err := b.chatHistoryRepo.SaveChatHistory(senderWspNumber, message, botResponse)
+	var similarityThreshold float32 = 0.5 // minimum similarity threshold for the semantic search
+	var matchCount int = 5                // is the number of menu items that the query will return
+	var botWspNumber string = chat.To     // is the WhatsApp number of the bot
+	var userMessage string = chat.Body    // is the message sent by the user
+	var userWspNumber string = chat.From  // is the WhatsApp number of the user
+
+	// Get the bot by the WhatsApp number
+	bot, err := b.botRepo.GetBotByWspNumber(botWspNumber)
 	if err != nil {
-		logrus.WithError(err).Error("failed to save chat history")
-		return err
+		logrus.WithError(err).Error("failed to get bot")
+		return fmt.Errorf("failed to get bot: %v", err)
+	}
+
+	restaurantID := bot.RestaurantID
+
+	// Generate the embedding for the user message
+	userMsgEmbedding, err := b.GenerateEmbedding(userMessage)
+	if err != nil {
+		logrus.WithError(err).Error("failed to generate embedding")
+		return fmt.Errorf("failed to generate embedding: %v", err)
+	}
+
+	// Search the menu using the semantic context
+	semanticContext, err := b.menuRepo.SemanticSearchMenu(userMsgEmbedding, similarityThreshold, matchCount, restaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to search menu")
+		return fmt.Errorf("failed to search menu: %v", err)
+	}
+
+	messages, err := b.PrepareChatMessages(chat, semanticContext, restaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to prepare chat messages")
+		return fmt.Errorf("failed to prepare chat messages: %v", err)
+	}
+
+	// Generate the bot response
+	botResponse, err := b.GenerateBotResponse(context.Background(), messages)
+	if err != nil {
+		logrus.WithError(err).Error("failed to generate bot response")
+		return fmt.Errorf("failed to generate bot response: %v", err)
+	}
+
+	// Send the bot response
+	if err := b.TwilioResponse(userWspNumber, botWspNumber, botResponse); err != nil {
+		logrus.WithError(err).Error("failed to send response")
+		return fmt.Errorf("failed to send response: %v", err)
+	}
+
+	// Save the chat history
+	err = b.chatHistoryRepo.SaveChat(&models.ChatHistory{
+		SenderWspNumber: userWspNumber,
+		BotWspNumber:    botWspNumber,
+		Message:         userMessage,
+		BotResponse:     botResponse,
+		RestaurantID:    restaurantID,
+	})
+	if err != nil {
+		logrus.WithError(err).Error("failed to save chat")
+		return fmt.Errorf("failed to save chat: %v", err)
 	}
 
 	return nil
-}
-
-// ChatCompletion implements BotService.
-func (b *BotServiceImpl) ChatCompletion(data string) (string, error) {
-	panic("implement me")
 
 }
 
@@ -108,9 +244,12 @@ Ofrecer una experiencia informativa y accesible para que los clientes conozcan m
 	return systemPrompt, nil
 }
 
-func NewBotServiceImpl(openAI *openai.Client, chatHistoryRepo data.ChatHistoryRepository) BotService {
+func NewBotServiceImpl(openAI *openai.Client, twilio *twilio.RestClient, chatHistoryRepo data.ChatHistoryRepository, botRepo data.BotRepository, menuRepo data.MenuRepository) BotService {
 	return &BotServiceImpl{
 		openAI:          openAI,
+		twilio:          twilio,
 		chatHistoryRepo: chatHistoryRepo,
+		botRepo:         botRepo,
+		menuRepo:        menuRepo,
 	}
 }
