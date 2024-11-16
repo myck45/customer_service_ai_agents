@@ -23,7 +23,7 @@ type BotService interface {
 	GenerateEmbedding(data string) ([]float32, error)
 	GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage) (string, error)
 	BotResponse(chat request.TwilioWebhook) error
-	SystemPrompt(aditionalData string) (string, error)
-	PrepareChatMessages(chat request.TwilioWebhook, semanticContext []response.MenuSearchResponse, restaurantID uint) ([]openai.ChatCompletionMessage, error)
+	SystemPrompt(botConfig request.BotConfig) (string, error)
+	PrepareChatMessages(chat request.TwilioWebhook, semanticContext []response.MenuSearchResponse, botInfo request.BotInfo) ([]openai.ChatCompletionMessage, error)
 	TwilioResponse(userWspNumber string, botWspNumber string, botResponse string) error
 }

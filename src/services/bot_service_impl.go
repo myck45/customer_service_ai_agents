@@ -31,6 +31,7 @@ func (b *BotServiceImpl) CreateBot(bot request.CreateBotReq) (*response.BotRespo
 	// Create the bot
 	newBot := &models.Bot{
 		Name:         bot.Name,
+		Identity:     bot.Identity,
 		WspNumber:    bot.WspNumber,
 		RestaurantID: bot.RestaurantID,
 	}
@@ -45,6 +46,7 @@ func (b *BotServiceImpl) CreateBot(bot request.CreateBotReq) (*response.BotRespo
 	botResponse := &response.BotResponse{
 		ID:           newBot.ID,
 		Name:         newBot.Name,
+		Identity:     newBot.Identity,
 		WspNumber:    newBot.WspNumber,
 		RestaurantID: newBot.RestaurantID,
 	}
@@ -80,6 +82,7 @@ func (b *BotServiceImpl) GetAllBots() ([]response.BotResponse, error) {
 		botResponses = append(botResponses, response.BotResponse{
 			ID:           bot.ID,
 			Name:         bot.Name,
+			Identity:     bot.Identity,
 			WspNumber:    bot.WspNumber,
 			RestaurantID: bot.RestaurantID,
 		})
@@ -102,6 +105,7 @@ func (b *BotServiceImpl) GetBotByID(botID uint) (*response.BotResponse, error) {
 	botResponse := &response.BotResponse{
 		ID:           bot.ID,
 		Name:         bot.Name,
+		Identity:     bot.Identity,
 		WspNumber:    bot.WspNumber,
 		RestaurantID: bot.RestaurantID,
 	}
@@ -125,6 +129,7 @@ func (b *BotServiceImpl) GetBotByRestaurantID(restaurantID uint) ([]response.Bot
 		botResponses = append(botResponses, response.BotResponse{
 			ID:           bot.ID,
 			Name:         bot.Name,
+			Identity:     bot.Identity,
 			WspNumber:    bot.WspNumber,
 			RestaurantID: bot.RestaurantID,
 		})
@@ -147,6 +152,7 @@ func (b *BotServiceImpl) GetBotByWspNumber(wspNumber string) (*response.BotRespo
 	botResponse := &response.BotResponse{
 		ID:           bot.ID,
 		Name:         bot.Name,
+		Identity:     bot.Identity,
 		WspNumber:    bot.WspNumber,
 		RestaurantID: bot.RestaurantID,
 	}
@@ -166,6 +172,7 @@ func (b *BotServiceImpl) UpdateBot(botID uint, bot request.UpdateBotReq) (*respo
 
 	// Update the bot
 	botToUpdate.Name = bot.Name
+	botToUpdate.Identity = bot.Identity
 	botToUpdate.WspNumber = bot.WspNumber
 
 	// Save the bot
@@ -201,7 +208,11 @@ func (b *BotServiceImpl) BotResponse(chat request.TwilioWebhook) error {
 		return fmt.Errorf("failed to get bot: %v", err)
 	}
 
-	restaurantID := bot.RestaurantID
+	botInfo := request.BotInfo{
+		BotName:      bot.Name,
+		BotIdentity:  bot.Identity,
+		RestaurantID: bot.RestaurantID,
+	}
 
 	// Generate the embedding for the user message
 	userMsgEmbedding, err := b.GenerateEmbedding(userMessage)
@@ -211,14 +222,14 @@ func (b *BotServiceImpl) BotResponse(chat request.TwilioWebhook) error {
 	}
 
 	// Search the menu using the semantic context
-	semanticContext, err := b.menuRepo.SemanticSearchMenu(userMsgEmbedding, similarityThreshold, matchCount, restaurantID)
+	semanticContext, err := b.menuRepo.SemanticSearchMenu(userMsgEmbedding, similarityThreshold, matchCount, botInfo.RestaurantID)
 	if err != nil {
 		logrus.WithError(err).Error("failed to search menu")
 		return fmt.Errorf("failed to search menu: %v", err)
 	}
 
 	// Prepare the chat messages
-	messages, err := b.PrepareChatMessages(chat, semanticContext, restaurantID)
+	messages, err := b.PrepareChatMessages(chat, semanticContext, botInfo)
 	if err != nil {
 		logrus.WithError(err).Error("failed to prepare chat messages")
 		return fmt.Errorf("failed to prepare chat messages: %v", err)
@@ -243,7 +254,7 @@ func (b *BotServiceImpl) BotResponse(chat request.TwilioWebhook) error {
 		BotWspNumber:    botWspNumber,
 		Message:         userMessage,
 		BotResponse:     botResponse,
-		RestaurantID:    restaurantID,
+		RestaurantID:    botInfo.RestaurantID,
 	})
 	if err != nil {
 		logrus.WithError(err).Error("failed to save chat")
@@ -298,10 +309,11 @@ func (b *BotServiceImpl) TwilioResponse(userWspNumber string, botWspNumber strin
 }
 
 // PrepareChatMessages implements BotService.
-func (b *BotServiceImpl) PrepareChatMessages(chat request.TwilioWebhook, semanticContext []response.MenuSearchResponse, restaurantID uint) ([]openai.ChatCompletionMessage, error) {
+func (b *BotServiceImpl) PrepareChatMessages(chat request.TwilioWebhook, semanticContext []response.MenuSearchResponse, botInfo request.BotInfo) ([]openai.ChatCompletionMessage, error) {
 
 	var senderWspNumber string = chat.From
 	var botWspNumber string = chat.To
+	var restaurantID uint = botInfo.RestaurantID
 
 	contextStr, err := json.Marshal(semanticContext)
 	if err != nil {
@@ -309,7 +321,13 @@ func (b *BotServiceImpl) PrepareChatMessages(chat request.TwilioWebhook, semanti
 		return nil, err
 	}
 
-	systemPrompt, err := b.SystemPrompt(string(contextStr))
+	botConfig := request.BotConfig{
+		BotName:         botInfo.BotName,
+		BotIdentity:     botInfo.BotIdentity,
+		SemanticContext: string(contextStr),
+	}
+
+	systemPrompt, err := b.SystemPrompt(botConfig)
 	if err != nil {
 		logrus.WithError(err).Error("failed to generate system prompt")
 		return nil, err
@@ -373,13 +391,19 @@ func (b *BotServiceImpl) GenerateEmbedding(data string) ([]float32, error) {
 }
 
 // SystemPrompt implements BotService.
-func (b *BotServiceImpl) SystemPrompt(additionalData string) (string, error) {
-	if additionalData == "" {
-		return "", errors.New("additional data cannot be empty")
-	}
+func (b *BotServiceImpl) SystemPrompt(botConfig request.BotConfig) (string, error) {
+
+	additionalData := botConfig.SemanticContext
+	botName := botConfig.BotName
+	botIdentity := botConfig.BotIdentity
 
 	systemPrompt := fmt.Sprintf(`
-		Eres un asistente de IA diseñado para mejorar la experiencia de los clientes en un restaurante. Proporcionas información detallada sobre el menú, platos, y datos clave del restaurante usando un sistema de búsqueda semántica que enriquece las respuestas con contexto relevante.
+**Identidad**
+- **Nombre** tu nombre es %s
+- **Identidad** %s 
+		
+		
+		Proporcionas información detallada sobre el menú, platos, y datos clave del restaurante usando un sistema de búsqueda semántica que enriquece las respuestas con contexto relevante.
 
 **Capacidades y Comportamiento:**
 - Respondes de forma clara y amigable, ajustándote a la consulta del usuario.
@@ -403,7 +427,7 @@ func (b *BotServiceImpl) SystemPrompt(additionalData string) (string, error) {
 **Objetivo:** 
 Ofrecer una experiencia informativa y accesible para que los clientes conozcan más sobre el restaurante y su menú, promoviendo satisfacción e interés.
 
-	`, additionalData, time.Now().Format("02-01-2006"))
+	`, botName, botIdentity, additionalData, time.Now().Format("2006-01-02"))
 
 	return systemPrompt, nil
 }
