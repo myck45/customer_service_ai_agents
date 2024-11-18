@@ -16,7 +16,8 @@ type RestaurantServiceImpl struct {
 func (r *RestaurantServiceImpl) CreateRestaurant(req *req.CreateRestaurantReq) (*res.RestaurantResponse, error) {
 
 	restaurant := &models.Restaurant{
-		Name: req.Name,
+		Name:   req.Name,
+		UserID: req.UserID,
 	}
 
 	restaurant, err := r.restaurantRepo.CreateRestaurant(restaurant)
