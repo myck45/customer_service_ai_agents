@@ -7,11 +7,11 @@ import (
 
 type Menu struct {
 	gorm.Model
-	RestaurantID uint            `gorm:"not null;index"`
 	ItemName     string          `gorm:"type:varchar(100);not null"`
 	Description  string          `gorm:"type:varchar(255);not null"`
 	Price        int             `gorm:"not null"`
 	Likes        int             `gorm:"default:0"`
 	Embedding    pgvector.Vector `gorm:"type:vector(3072)"`
+	RestaurantID uint            `gorm:"not null;index"`
 	Restaurant   Restaurant      `gorm:"foreignKey:RestaurantID"`
 }
