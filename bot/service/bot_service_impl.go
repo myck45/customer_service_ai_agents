@@ -25,7 +25,7 @@ type BotServiceImpl struct {
 }
 
 // BotResponse implements BotService.
-func (b *BotServiceImpl) BotResponse(chat req.TwilioWebhook) error {
+func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 
 	var similarityThreshold float32 = 0.5 // minimum similarity threshold for the semantic search
 	var matchCount int = 5                // is the number of menu items that the query will return
@@ -119,7 +119,7 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 }
 
 // PrepareChatMessages implements BotService.
-func (b *BotServiceImpl) PrepareChatMessages(chat req.TwilioWebhook, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error) {
+func (b *BotServiceImpl) PrepareChatMessages(chat *req.TwilioWebhook, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error) {
 
 	var senderWspNumber string = chat.From
 	var botWspNumber string = chat.To

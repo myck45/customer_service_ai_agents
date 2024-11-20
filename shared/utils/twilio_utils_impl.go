@@ -15,12 +15,9 @@ type TwilioUtilsImpl struct {
 // SendWspMessage implements TwilioUtils.
 func (t *TwilioUtilsImpl) SendWspMessage(to string, from string, message string) error {
 
-	userWspNumber := fmt.Sprintf("whatsapp:%s", to)
-	botWspNumber := fmt.Sprintf("whatsapp:%s", from)
-
 	params := &twilioApi.CreateMessageParams{}
-	params.SetTo(userWspNumber)
-	params.SetFrom(botWspNumber)
+	params.SetTo(to)
+	params.SetFrom(from)
 	params.SetBody(message)
 
 	resp, err := t.twilio.Api.CreateMessage(params)

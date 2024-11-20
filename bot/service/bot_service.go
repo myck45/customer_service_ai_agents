@@ -10,7 +10,7 @@ import (
 
 type BotService interface {
 	GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage) (string, error)
-	BotResponse(chat req.TwilioWebhook) error
+	BotResponse(chat *req.TwilioWebhook) error
 	SystemPrompt(botConfig req.BotConfig) (string, error)
-	PrepareChatMessages(chat req.TwilioWebhook, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error)
+	PrepareChatMessages(chat *req.TwilioWebhook, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error)
 }

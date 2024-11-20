@@ -4,8 +4,8 @@ import "gorm.io/gorm"
 
 type ChatHistory struct {
 	gorm.Model
-	SenderWspNumber string     `gorm:"type:varchar(20);not null"`
-	BotWspNumber    string     `gorm:"type:varchar(20);not null"`
+	SenderWspNumber string     `gorm:"type:varchar(25);not null"`
+	BotWspNumber    string     `gorm:"type:varchar(25);not null"`
 	Message         string     `gorm:"type:text;not null"`
 	BotResponse     string     `gorm:"type:text;not null"`
 	RestaurantID    uint       `gorm:"not null;index"`

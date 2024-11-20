@@ -10,7 +10,7 @@ type BotCRUDService interface {
 	GetBotByRestaurantID(restaurantID uint) ([]res.BotResponse, error)
 	GetBotByWspNumber(wspNumber string) (*res.BotResponse, error)
 	GetAllBots() ([]res.BotResponse, error)
-	CreateBot(bot req.CreateBotReq) (*res.BotResponse, error)
-	UpdateBot(botID uint, bot req.UpdateBotReq) (*res.BotResponse, error)
+	CreateBot(bot *req.CreateBotReq) (*res.BotResponse, error)
+	UpdateBot(botID uint, bot *req.UpdateBotReq) (*res.BotResponse, error)
 	DeleteBotByID(botID uint) error
 }

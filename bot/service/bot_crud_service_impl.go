@@ -15,7 +15,7 @@ type BotCRUDServiceImpl struct {
 }
 
 // CreateBot implements BotCRUDService.
-func (b *BotCRUDServiceImpl) CreateBot(bot req.CreateBotReq) (*res.BotResponse, error) {
+func (b *BotCRUDServiceImpl) CreateBot(bot *req.CreateBotReq) (*res.BotResponse, error) {
 	// Create the bot
 	newBot := &models.Bot{
 		Name:         bot.Name,
@@ -148,7 +148,7 @@ func (b *BotCRUDServiceImpl) GetBotByWspNumber(wspNumber string) (*res.BotRespon
 }
 
 // UpdateBot implements BotCRUDService.
-func (b *BotCRUDServiceImpl) UpdateBot(botID uint, bot req.UpdateBotReq) (*res.BotResponse, error) {
+func (b *BotCRUDServiceImpl) UpdateBot(botID uint, bot *req.UpdateBotReq) (*res.BotResponse, error) {
 
 	// Get the bot
 	botToUpdate, err := b.botRepo.GetBotByID(botID)

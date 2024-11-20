@@ -20,7 +20,7 @@ func (r *ResponseHandlersImpl) HandleError(c *gin.Context, statusCode int, messa
 		Msg:    fmt.Sprintf("%s: %s", message, err.Error()),
 		Data:   "",
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(statusCode, res)
 }
 
 // HandleSuccess implements ResponseHandlers.
