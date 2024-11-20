@@ -67,7 +67,7 @@ func (u *UserControllerImpl) GetAllUsers(c *gin.Context) {
 // GetUserByEmail implements UserController.
 func (u *UserControllerImpl) GetUserByEmail(c *gin.Context) {
 
-	email := c.Query("email")
+	email := c.Param("email")
 
 	user, err := u.userService.GetUserByEmail(email)
 	if err != nil {

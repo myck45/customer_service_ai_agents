@@ -22,7 +22,7 @@ func (t *TwilioUtilsImpl) SendWspMessage(to string, from string, message string)
 
 	resp, err := t.twilio.Api.CreateMessage(params)
 	if err != nil {
-		logrus.WithError(err).Error("failed to send message")
+		logrus.WithError(err).Error("*** [TwilioUtilsImpl] failed to send message")
 		return fmt.Errorf("failed to send message: %v", err)
 	}
 

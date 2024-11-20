@@ -8,6 +8,7 @@ import (
 	"github.com/proyectos01-a/bot/dto/req"
 	"github.com/proyectos01-a/bot/service"
 	"github.com/proyectos01-a/shared/handlers"
+	"github.com/sirupsen/logrus"
 )
 
 type BotCRUDControllerImpl struct {
@@ -20,12 +21,14 @@ func (b *BotCRUDControllerImpl) CreateBot(c *gin.Context) {
 
 	createBotRequest := &req.CreateBotReq{}
 	if err := c.ShouldBindJSON(createBotRequest); err != nil {
+		logrus.WithError(err).Error("*** [CreateBot] Error binding request")
 		b.responseHandler.HandleError(c, http.StatusBadRequest, "Error binding request", err)
 		return
 	}
 
 	bot, err := b.botCRUDService.CreateBot(createBotRequest)
 	if err != nil {
+		logrus.WithError(err).Error("*** [CreateBot] Error creating bot")
 		b.responseHandler.HandleError(c, http.StatusInternalServerError, "Error creating bot", err)
 		return
 	}
@@ -39,11 +42,13 @@ func (b *BotCRUDControllerImpl) DeleteBotByID(c *gin.Context) {
 	botID := c.Param("id")
 	id, err := strconv.ParseUint(botID, 10, 64)
 	if err != nil {
+		logrus.WithError(err).Error("*** [DeleteBotByID] Error parsing id")
 		b.responseHandler.HandleError(c, http.StatusBadRequest, "Error parsing id", err)
 		return
 	}
 
 	if err := b.botCRUDService.DeleteBotByID(uint(id)); err != nil {
+		logrus.WithError(err).Error("*** [DeleteBotByID] Error deleting bot")
 		b.responseHandler.HandleError(c, http.StatusInternalServerError, "Error deleting bot", err)
 		return
 	}

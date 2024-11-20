@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/proyectos01-a/shared/models"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -29,6 +30,19 @@ func DatabaseConnection() *gorm.DB {
 	if err != nil {
 		logrus.Fatalf("Error enabling vector extension: %v", err)
 		panic("Failed to enable vector extension")
+	}
+
+	err = db.AutoMigrate(
+		&models.User{},
+		&models.Restaurant{},
+		&models.Bot{},
+		&models.Menu{},
+		&models.ChatHistory{},
+	)
+
+	if err != nil {
+		logrus.Fatalf("Error migrating models: %v", err)
+		panic("Failed to migrate models")
 	}
 
 	return db
