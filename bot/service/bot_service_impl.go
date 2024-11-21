@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/proyectos01-a/bot/dto/req"
@@ -32,6 +33,10 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 	var botWspNumber string = chat.To     // is the WhatsApp number of the bot
 	var userWspNumber string = chat.From  // is the WhatsApp number of the user
 	var userMessage string = chat.Body    // is the message sent by the user
+
+	if !strings.HasPrefix(botWspNumber, "whatsapp:") {
+		botWspNumber = fmt.Sprintf("whatsapp:%s", botWspNumber)
+	}
 
 	// Get the bot by the WhatsApp number
 	bot, err := b.botRepo.GetBotByWspNumber(botWspNumber)

@@ -109,7 +109,7 @@ func (b *BotCRUDControllerImpl) GetBotByRestaurantID(c *gin.Context) {
 // GetBotByWspNumber implements BotCRUDController.
 func (b *BotCRUDControllerImpl) GetBotByWspNumber(c *gin.Context) {
 
-	wspNumber := c.Query("wsp_number")
+	wspNumber := c.Param("whatsapp")
 
 	bot, err := b.botCRUDService.GetBotByWspNumber(wspNumber)
 	if err != nil {

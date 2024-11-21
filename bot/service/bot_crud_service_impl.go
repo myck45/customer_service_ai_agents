@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/proyectos01-a/bot/dto/req"
 	"github.com/proyectos01-a/bot/dto/res"
@@ -16,6 +17,10 @@ type BotCRUDServiceImpl struct {
 
 // CreateBot implements BotCRUDService.
 func (b *BotCRUDServiceImpl) CreateBot(bot *req.CreateBotReq) (*res.BotResponse, error) {
+
+	if !strings.HasPrefix(bot.WspNumber, "whatsapp:") {
+		bot.WspNumber = fmt.Sprintf("whatsapp:%s", bot.WspNumber)
+	}
 	// Create the bot
 	newBot := &models.Bot{
 		Name:         bot.Name,
@@ -128,6 +133,9 @@ func (b *BotCRUDServiceImpl) GetBotByRestaurantID(restaurantID uint) ([]res.BotR
 // GetBotByWspNumber implements BotCRUDService.
 func (b *BotCRUDServiceImpl) GetBotByWspNumber(wspNumber string) (*res.BotResponse, error) {
 
+	if !strings.HasPrefix(wspNumber, "whatsapp:") {
+		wspNumber = fmt.Sprintf("whatsapp:%s", wspNumber)
+	}
 	// Get the bot
 	bot, err := b.botRepo.GetBotByWspNumber(wspNumber)
 	if err != nil {
@@ -149,6 +157,10 @@ func (b *BotCRUDServiceImpl) GetBotByWspNumber(wspNumber string) (*res.BotRespon
 
 // UpdateBot implements BotCRUDService.
 func (b *BotCRUDServiceImpl) UpdateBot(botID uint, bot *req.UpdateBotReq) (*res.BotResponse, error) {
+
+	if !strings.HasPrefix(bot.WspNumber, "whatsapp:") {
+		bot.WspNumber = fmt.Sprintf("whatsapp:%s", bot.WspNumber)
+	}
 
 	// Get the bot
 	botToUpdate, err := b.botRepo.GetBotByID(botID)
