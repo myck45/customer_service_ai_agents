@@ -34,11 +34,11 @@ func init() {
 	// Instance utils
 	utils := utils.NewUtilsImpl()
 
-	// Instance user service
-	userService := service.NewUserServiceImpl(userRepo, bcryptUtil, utils)
-
 	// Instance auth
 	auth := auth.NewAuth()
+
+	// Instance user service
+	userService := service.NewUserServiceImpl(userRepo, bcryptUtil, utils)
 
 	// Instance auth service
 	authService := service.NewAuthServiceImpl(auth, bcryptUtil, userRepo)
@@ -72,6 +72,8 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 	}
 
 	logrus.Info("Request handled successfully")
+
+	// res.Headers["Access-Control-Allow-Origin"] = "*" // Enable CORS
 	return res, nil
 }
 
