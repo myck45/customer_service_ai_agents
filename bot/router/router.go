@@ -33,7 +33,7 @@ func (r *Router) InitRoutes() *Router {
 		})
 	})
 
-	baseRoute := router.Group("api/v1")
+	baseRoute := router.Group("/api/v1")
 	{
 		botCRUDRoute := baseRoute.Group("/bot")
 		{
@@ -46,7 +46,7 @@ func (r *Router) InitRoutes() *Router {
 			botCRUDRoute.POST("/update/:id", r.botCRUDController.UpdateBot)
 		}
 
-		botRoute := baseRoute.Group("/bot/response")
+		botRoute := baseRoute.Group("/bot-response")
 		{
 			botRoute.POST("/twilio/webhook", r.botController.BotResponse)
 		}

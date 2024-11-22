@@ -33,7 +33,7 @@ func (r *Router) InitRoutes() *Router {
 		})
 	})
 
-	baseRoute := router.Group("api/v1")
+	baseRoute := router.Group("/api/v1")
 	{
 		restaurantRoute := baseRoute.Group("/restaurant")
 		{

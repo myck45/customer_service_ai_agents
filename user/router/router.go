@@ -34,7 +34,7 @@ func (r *Router) InitRoutes() *Router {
 		})
 	})
 
-	baseRoute := router.Group("api/v1")
+	baseRoute := router.Group("/api/v1")
 	{
 		userRoute := baseRoute.Group("/user")
 		{
@@ -43,7 +43,7 @@ func (r *Router) InitRoutes() *Router {
 			userRoute.GET("/all", r.userController.GetAllUsers)
 			userRoute.GET("/:id", r.userController.GetUserByID)
 			userRoute.GET("/email/:email", r.userController.GetUserByEmail)
-			userRoute.POST("/update", r.userController.UpdateUser)
+			userRoute.POST("/update/:id", r.userController.UpdateUser)
 			userRoute.POST("/login", r.loginController.Login)
 		}
 	}
