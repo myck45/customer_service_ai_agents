@@ -907,6 +907,10 @@ resource "aws_api_gateway_deployment" "restaurant_menu_api_deployment" {
       bot_response_twilio_webhook_options_integration = aws_api_gateway_integration.bot_response_twilio_webhook_options.uri
     }))
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 #####################################################
