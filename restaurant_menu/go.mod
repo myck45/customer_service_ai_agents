@@ -3,6 +3,8 @@ module github.com/proyectos01-a/restaurantMenu
 go 1.22.1
 
 require (
+	github.com/aws/aws-lambda-go v1.41.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/pgvector/pgvector-go v0.2.2
 	github.com/sirupsen/logrus v1.9.3

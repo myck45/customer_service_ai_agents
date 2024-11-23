@@ -3,6 +3,8 @@ module github.com/proyectos01-a/bot
 go 1.22.1
 
 require (
+	github.com/aws/aws-lambda-go v1.41.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/sashabaranov/go-openai v1.35.6
 	github.com/sirupsen/logrus v1.9.3

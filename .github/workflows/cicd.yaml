@@ -1,0 +1,246 @@
+    name: CI/CD Pipeline
+
+    on:
+        push: 
+            branches: 
+                - main
+    
+    jobs:
+        test-and-build-user-service:
+            name: Test and Build User Service
+            runs-on: ubuntu-latest
+            steps:
+                - name: Checkout code
+                  uses: actions/checkout@v4
+
+                - name: Set up GO
+                  uses: actions/setup-go@v2
+                  with:
+                    go-version: 1.22.1
+                
+                - name: Sync modules
+                  run: go work sync
+                  working-directory: .
+                
+                - name: Cache dependencies
+                  uses: actions/cache@v2
+                  with:
+                    path: ~/go/pkg/mod
+                    key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                    restore-keys: |
+                      ${{ runner.os }}-go-
+
+                - name: Install dependencies
+                  working-directory: ./user
+                  run: go mod download
+
+                # - name: Run golangci-lint
+                #   uses: golangci/golangci-lint-action@v6.0.1
+                #   with:
+                #     working-directory: ./user
+                #     args: --out-format colored-line-number ./user/...
+
+                # - name: Run tests
+                #   working-directory: ./user
+                #   run: go test -coverprofile=coverage.out ./...
+
+                # - name: Upload coverage to Codecov
+                #   uses: codecov/codecov-action@v2
+                #   with:
+                #     token: ${{ secrets.CODECOV_TOKEN }}
+
+                - name: Build binary
+                  working-directory: ./user
+                  run: GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+
+                - name: Zip binary
+                  working-directory: ./user
+                  run: zip user_service.zip bootstrap
+                
+                - name: Upload artifact
+                  uses: actions/upload-artifact@v2
+                  with:
+                    name: user_service
+                    path: ./user/user_service.zip
+        
+
+
+        test-and-build-restaurant-menu-service:
+            name: Test and Build Restaurant Menu Service
+            runs-on: ubuntu-latest
+            needs: test-and-build-user-service
+            steps:
+                - name: Checkout code
+                  uses: actions/checkout@v4
+
+                - name: Set up GO
+                  uses: actions/setup-go@v2
+                  with:
+                    go-version: 1.22.1
+                
+                - name: Sync modules
+                  run: go work sync
+                  working-directory: .
+                
+                - name: Cache dependencies
+                  uses: actions/cache@v2
+                  with:
+                    path: ~/go/pkg/mod
+                    key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                    restore-keys: |
+                      ${{ runner.os }}-go-
+                
+                - name: Install dependencies
+                  working-directory: ./restaurant_menu
+                  run: go mod download
+
+                # - name: Run golangci-lint
+                #   uses: golangci/golangci-lint-action@v6.0.1
+                #   with:
+                #     working-directory: ./restaurant_menu
+                #     args: --out-format colored-line-number ./restaurant_menu/...
+
+                # - name: Run tests
+                #   working-directory: ./restaurant_menu
+                #   run: go test -coverprofile=coverage.out ./...
+
+                # - name: Upload coverage to Codecov
+                #   uses: codecov/codecov-action@v2
+                #   with:
+                #     token: ${{ secrets.CODECOV_TOKEN }}
+
+                - name: Build binary
+                  working-directory: ./restaurant_menu
+                  run: GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+
+                - name: Zip binary
+                  working-directory: ./restaurant_menu
+                  run: zip restaurant_menu_service.zip bootstrap
+                
+                - name: Upload artifact
+                  uses: actions/upload-artifact@v2
+                  with:
+                    name: restaurant_menu_service.zip
+                    path: ./restaurant_menu/restaurant_menu_service.zip
+        
+
+        test-and-build-bot-service:
+            name: Test and Build Bot Service
+            needs: [test-and-build-user-service, test-and-build-restaurant-menu-service]
+            runs-on: ubuntu-latest
+            steps:
+                - name: Checkout code
+                  uses: actions/checkout@v4
+
+                - name: Set up GO
+                  uses: actions/setup-go@v2
+                  with:
+                    go-version: 1.22.1
+                
+                - name: Sync modules
+                  run: go work sync
+                  working-directory: .
+                
+                - name: Cache dependencies
+                  uses: actions/cache@v2
+                  with:
+                    path: ~/go/pkg/mod
+                    key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                    restore-keys: |
+                      ${{ runner.os }}-go-
+                
+                - name: Install dependencies
+                  working-directory: ./bot
+                  run: go mod download
+
+                # - name: Run golangci-lint
+                #   uses: golangci/golangci-lint-action@v6.0.1
+                #   with:
+                #     working-directory: ./bot
+                #     args: --out-format colored-line-number ./bot/...
+
+                # - name: Run tests
+                #   working-directory: ./bot
+                #   run: go test -coverprofile=coverage.out ./...
+
+                # - name: Upload coverage to Codecov
+                #   uses: codecov/codecov-action@v2
+                #   with:
+                #     token: ${{ secrets.CODECOV_TOKEN }}
+
+                - name: Build binary
+                  working-directory: ./bot
+                  run: GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+
+                - name: Zip binary
+                  working-directory: ./bot
+                  run: zip bot_service.zip bootstrap
+
+                - name: Upload artifact
+                  uses: actions/upload-artifact@v2
+                  with:
+                    name: bot_service
+                    path: ./bot/bot_service.zip
+        
+        deploy-stage:
+            name: Deploy
+            needs: [test-and-build-user-service, test-and-build-restaurant-menu-service, test-and-build-bot-service]
+            runs-on: ubuntu-latest
+            permissions:
+                id-token: write
+                contents: read
+            steps:
+                - name: Checkout code
+                  uses: actions/checkout@v4
+
+                - name: Download user_service artifact
+                  uses: actions/download-artifact@v4
+                  with:
+                    name: user_service
+                    path: ./terraform
+                
+                - name: Download restaurant_menu_service artifact
+                  uses: actions/download-artifact@v4
+                  with:
+                    name: restaurant_menu_service.zip
+                    path: ./terraform
+
+                - name: Download bot_service artifact
+                  uses: actions/download-artifact@v4
+                  with:
+                    name: bot_service
+                    path: ./terraform
+
+                - name: Configure AWS credentials using OIDC
+                  uses: aws-actions/configure-aws-credentials@v2
+                  with:
+                    role-to-assume: arn:aws:iam::202533528050:role/restaurant_menu
+                    aws-region: sa-east-1
+                    audience: sts.amazonaws.com
+
+                - name: Set up Terraform variables
+                  run: |
+                    echo "TF_VAR_db_host=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+                    echo "TF_VAR_db_port=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
+                    echo "TF_VAR_db_user=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+                    echo "TF_VAR_db_name=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+                    echo "TF_VAR_db_password=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+                    echo "TF_VAR_openai_api_key=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+                    echo "TF_VAR_jwt_secret=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+                    echo "TF_VAR_twilio_account_sid=${{ secrets.TWILIO_ACCOUNT_SID }}" >> $GITHUB_ENV
+                    echo "TF_VAR_twilio_auth_token=${{ secrets.TWILIO_AUTH_TOKEN }}" >> $GITHUB_ENV
+
+                - name: Set up Terraform
+                  uses: hashicorp/setup-terraform@v1
+
+                - name: Initialize Terraform
+                  working-directory: ./terraform
+                  run: terraform init
+
+                - name: Plan Terraform
+                  working-directory: ./terraform
+                  run: terraform plan -out=tfplan
+
+                - name: Apply Terraform
+                  working-directory: ./terraform
+                  run: terraform apply -auto-approve tfplan
