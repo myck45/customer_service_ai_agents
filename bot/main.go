@@ -82,7 +82,10 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 
 	logrus.Info("Request handled successfully")
 
-	// res.Headers["Access-Control-Allow-Origin"] = "*" // Enable CORS
+	// Add CORS headers
+	res.Headers["Access-Control-Allow-Origin"] = "*"
+	res.Headers["Access-Control-Allow-Headers"] = "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+	res.Headers["Access-Control-Allow-Methods"] = "POST,OPTIONS"
 	return res, nil
 }
 

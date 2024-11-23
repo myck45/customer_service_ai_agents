@@ -768,40 +768,6 @@ resource "aws_api_gateway_integration" "bot_response_twilio_webhook_options" {
   }
 }
 
-###################################################
-# RESPONSE for BOT SERVICE TWILIO ENDPOINTS       #
-###################################################
-
-# Response for POST /api/v1/bot-response/twilio/webhook endpoint
-resource "aws_api_gateway_method_response" "bot_response_twilio_webhook_post_200" {
-  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api.id
-  resource_id = aws_api_gateway_resource.bot_response_twilio_webhook.id
-  http_method = aws_api_gateway_method.bot_response_twilio_webhook_post.http_method
-  status_code = "200"
-  response_models = {
-    "application/json" = "Empty"
-  }
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-# Integration response for POST /api/v1/bot-response/twilio/webhook endpoint
-resource "aws_api_gateway_integration_response" "bot_response_twilio_webhook_post_200" {
-  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api.id
-  resource_id = aws_api_gateway_resource.bot_response_twilio_webhook.id
-  http_method = aws_api_gateway_method.bot_response_twilio_webhook_post.http_method
-  status_code = "200"
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-}
 
 #############################
 # LAMBDA INVOKE PERMISSIONS #
