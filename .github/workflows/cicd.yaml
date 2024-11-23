@@ -58,7 +58,7 @@
                   run: zip user_service.zip bootstrap
                 
                 - name: Upload artifact
-                  uses: actions/upload-artifact@v2
+                  uses: actions/upload-artifact@v4
                   with:
                     name: user_service
                     path: ./user/user_service.zip
@@ -118,7 +118,7 @@
                   run: zip restaurant_menu_service.zip bootstrap
                 
                 - name: Upload artifact
-                  uses: actions/upload-artifact@v2
+                  uses: actions/upload-artifact@v4
                   with:
                     name: restaurant_menu_service.zip
                     path: ./restaurant_menu/restaurant_menu_service.zip
@@ -177,7 +177,7 @@
                   run: zip bot_service.zip bootstrap
 
                 - name: Upload artifact
-                  uses: actions/upload-artifact@v2
+                  uses: actions/upload-artifact@v4
                   with:
                     name: bot_service
                     path: ./bot/bot_service.zip
