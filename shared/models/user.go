@@ -14,6 +14,6 @@ type User struct {
 	UserEmail  string       `gorm:"type:varchar(100);unique;not null"`
 	Password   string       `gorm:"type:varchar(255);not null"`
 	PhoneNum   string       `gorm:"type:varchar(25);unique;not null"`
-	Role       string       `gorm:"type:enum('admin','user');default:'user'"`
+	Role       string       `gorm:"type:varchar(25);not null"`
 	Restaurant []Restaurant `gorm:"foreignKey:UserID"`
 }
