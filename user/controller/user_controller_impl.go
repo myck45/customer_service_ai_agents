@@ -27,7 +27,7 @@ func (u *UserControllerImpl) CreateUser(c *gin.Context) {
 	user, err := u.userService.CreateUser(createUserReq)
 	if err != nil {
 		u.responseHandler.HandleError(c, http.StatusInternalServerError, "Error creating user", err)
-
+		return
 	}
 
 	u.responseHandler.HandleSuccess(c, http.StatusOK, "User created successfully", user.ID)

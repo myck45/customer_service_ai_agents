@@ -67,6 +67,11 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body:       "Gateway error, check logs for more information",
+			Headers: map[string]string{
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+				"Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
+			},
 		}, err
 
 	}
