@@ -837,36 +837,35 @@ resource "aws_api_gateway_deployment" "restaurant_menu_api_deployment" {
   description = "Deployment for the restaurant menu API"
 
   triggers = {
-
-    integrations = sha1(jsonencode({
-      user_post_integration                           = aws_api_gateway_integration.user_post.uri
-      user_delete_integration                         = aws_api_gateway_integration.user_delete.uri
-      user_all_get_integration                        = aws_api_gateway_integration.user_all_get.uri
-      user_id_get_integration                         = aws_api_gateway_integration.user_id_get.uri
-      user_email_email_get_integration                = aws_api_gateway_integration.user_email_email_get.uri
-      user_update_id_post_integration                 = aws_api_gateway_integration.user_update_id_post.uri
-      user_login_post_integration                     = aws_api_gateway_integration.user_login_post.uri
-      restaurant_post_integration                     = aws_api_gateway_integration.restaurant_post.uri
-      restaurant_delete_integration                   = aws_api_gateway_integration.restaurant_delete.uri
-      restaurant_all_get_integration                  = aws_api_gateway_integration.restaurant_all_get.uri
-      restaurant_id_get_integration                   = aws_api_gateway_integration.restaurant_id_get.uri
-      restaurant_update_id_post_integration           = aws_api_gateway_integration.restaurant_update_id_post.uri
-      menu_post_integration                           = aws_api_gateway_integration.menu_post.uri
-      menu_delete_integration                         = aws_api_gateway_integration.menu_delete.uri
-      menu_all_get_integration                        = aws_api_gateway_integration.menu_all_get.uri
-      menu_search_get_integration                     = aws_api_gateway_integration.menu_search_get.uri
-      menu_id_get_integration                         = aws_api_gateway_integration.menu_id_get.uri
-      menu_update_id_post_integration                 = aws_api_gateway_integration.menu_update_id_post.uri
-      bot_post_integration                            = aws_api_gateway_integration.bot_post.uri
-      bot_delete_integration                          = aws_api_gateway_integration.bot_delete.uri
-      bot_all_get_integration                         = aws_api_gateway_integration.bot_all_get.uri
-      bot_id_get_integration                          = aws_api_gateway_integration.bot_id_get.uri
-      bot_restaurant_id_get_integration               = aws_api_gateway_integration.bot_restaurant_id_get.uri
-      bot_whatsapp_whatsapp_get_integration           = aws_api_gateway_integration.bot_whatsapp_whatsapp_get.uri
-      bot_update_id_post_integration                  = aws_api_gateway_integration.bot_update_id_post.uri
-      bot_response_twilio_webhook_post_integration    = aws_api_gateway_integration.bot_response_twilio_webhook_post.uri
-      bot_response_twilio_webhook_options_integration = aws_api_gateway_integration.bot_response_twilio_webhook_options.uri
-    }))
+    redeployment = sha1(join(",", [
+      jsonencode(aws_api_gateway_integration.user_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.user_delete.integration_http_method),
+      jsonencode(aws_api_gateway_integration.user_all_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.user_id_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.user_email_email_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.user_update_id_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.user_login_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.restaurant_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.restaurant_delete.integration_http_method),
+      jsonencode(aws_api_gateway_integration.restaurant_all_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.restaurant_id_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.restaurant_update_id_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.menu_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.menu_delete.integration_http_method),
+      jsonencode(aws_api_gateway_integration.menu_all_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.menu_search_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.menu_id_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.menu_update_id_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_delete.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_all_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_id_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_restaurant_id_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_whatsapp_whatsapp_get.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_update_id_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_response_twilio_webhook_post.integration_http_method),
+      jsonencode(aws_api_gateway_integration.bot_response_twilio_webhook_options.integration_http_method)
+    ]))
   }
 
   lifecycle {
