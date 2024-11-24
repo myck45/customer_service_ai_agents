@@ -41,8 +41,7 @@ func DatabaseConnection() *gorm.DB {
 	)
 
 	if err != nil {
-		logrus.Fatalf("Error migrating models: %v", err)
-		panic("Failed to migrate models")
+		logrus.Warnf("Error migrating models: %v", err)
 	}
 
 	return db
