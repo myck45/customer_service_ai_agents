@@ -159,7 +159,7 @@ resource "aws_api_gateway_integration" "user_delete" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.user_id.id
   http_method             = aws_api_gateway_method.user_delete.http_method
-  integration_http_method = "DELETE"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.user_service.invoke_arn
 }
@@ -169,7 +169,7 @@ resource "aws_api_gateway_integration" "user_all_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.user_all.id
   http_method             = aws_api_gateway_method.user_all_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.user_service.invoke_arn
 }
@@ -179,7 +179,7 @@ resource "aws_api_gateway_integration" "user_id_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.user_id.id
   http_method             = aws_api_gateway_method.user_id_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.user_service.invoke_arn
 }
@@ -189,7 +189,7 @@ resource "aws_api_gateway_integration" "user_email_email_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.user_email_email.id
   http_method             = aws_api_gateway_method.user_email_email_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.user_service.invoke_arn
 }
@@ -409,7 +409,7 @@ resource "aws_api_gateway_integration" "restaurant_delete" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.restaurant_id.id
   http_method             = aws_api_gateway_method.restaurant_delete.http_method
-  integration_http_method = "DELETE"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -419,7 +419,7 @@ resource "aws_api_gateway_integration" "restaurant_all_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.restaurant_all.id
   http_method             = aws_api_gateway_method.restaurant_all_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -429,7 +429,7 @@ resource "aws_api_gateway_integration" "restaurant_id_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.restaurant_id.id
   http_method             = aws_api_gateway_method.restaurant_id_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -459,7 +459,7 @@ resource "aws_api_gateway_integration" "menu_delete" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.menu_id.id
   http_method             = aws_api_gateway_method.menu_delete.http_method
-  integration_http_method = "DELETE"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -469,7 +469,7 @@ resource "aws_api_gateway_integration" "menu_all_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.menu_all.id
   http_method             = aws_api_gateway_method.menu_all_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -479,7 +479,7 @@ resource "aws_api_gateway_integration" "menu_search_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.menu_search.id
   http_method             = aws_api_gateway_method.menu_search_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -489,7 +489,7 @@ resource "aws_api_gateway_integration" "menu_id_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.menu_id.id
   http_method             = aws_api_gateway_method.menu_id_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
@@ -689,7 +689,7 @@ resource "aws_api_gateway_integration" "bot_delete" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.bot_id.id
   http_method             = aws_api_gateway_method.bot_delete.http_method
-  integration_http_method = "DELETE"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.bot_service.invoke_arn
 }
@@ -699,7 +699,7 @@ resource "aws_api_gateway_integration" "bot_all_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.bot_all.id
   http_method             = aws_api_gateway_method.bot_all_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.bot_service.invoke_arn
 }
@@ -709,7 +709,7 @@ resource "aws_api_gateway_integration" "bot_id_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.bot_id.id
   http_method             = aws_api_gateway_method.bot_id_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.bot_service.invoke_arn
 }
@@ -719,7 +719,7 @@ resource "aws_api_gateway_integration" "bot_restaurant_id_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.bot_restaurant_id.id
   http_method             = aws_api_gateway_method.bot_restaurant_id_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.bot_service.invoke_arn
 }
@@ -729,7 +729,7 @@ resource "aws_api_gateway_integration" "bot_whatsapp_whatsapp_get" {
   rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
   resource_id             = aws_api_gateway_resource.bot_whatsapp_whatsapp.id
   http_method             = aws_api_gateway_method.bot_whatsapp_whatsapp_get.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.bot_service.invoke_arn
 }
@@ -756,11 +756,10 @@ resource "aws_api_gateway_integration" "bot_response_twilio_webhook_post" {
 
 # Integration for OPTIONS /api/v1/bot-response/twilio/webhook endpoint
 resource "aws_api_gateway_integration" "bot_response_twilio_webhook_options" {
-  rest_api_id             = aws_api_gateway_rest_api.restaurant_menu_api.id
-  resource_id             = aws_api_gateway_resource.bot_response_twilio_webhook.id
-  http_method             = aws_api_gateway_method.bot_response_twilio_webhook_options.http_method
-  integration_http_method = "OPTIONS"
-  type                    = "MOCK"
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api.id
+  resource_id = aws_api_gateway_resource.bot_response_twilio_webhook.id
+  http_method = aws_api_gateway_method.bot_response_twilio_webhook_options.http_method
+  type        = "MOCK"
   request_templates = {
     "application/json" = jsonencode({
       statusCode = 200
