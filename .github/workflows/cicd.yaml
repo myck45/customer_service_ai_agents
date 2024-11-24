@@ -232,6 +232,8 @@
 
                 - name: Set up Terraform
                   uses: hashicorp/setup-terraform@v1
+                  with:
+                    terraform_version: 5.61.0
 
                 - name: Initialize Terraform
                   working-directory: ./terraform
