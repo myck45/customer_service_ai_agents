@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-res-menu"
+    bucket         = "terraform-state-restaurant-menu"
     key            = "terraform.tfstate"
     region         = "sa-east-1"
-    dynamodb_table = "terraform-state-lock-res-menu"
+    dynamodb_table = "terraform-state-lock-restaurant-menu"
     encrypt        = true
   }
 
