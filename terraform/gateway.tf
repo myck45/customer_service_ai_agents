@@ -837,35 +837,11 @@ resource "aws_api_gateway_deployment" "restaurant_menu_api_deployment" {
   description = "Deployment for the restaurant menu API"
 
   triggers = {
-    redeployment = sha1(join(",", [
-      jsonencode(aws_api_gateway_integration.user_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.user_delete.integration_http_method),
-      jsonencode(aws_api_gateway_integration.user_all_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.user_id_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.user_email_email_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.user_update_id_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.user_login_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.restaurant_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.restaurant_delete.integration_http_method),
-      jsonencode(aws_api_gateway_integration.restaurant_all_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.restaurant_id_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.restaurant_update_id_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.menu_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.menu_delete.integration_http_method),
-      jsonencode(aws_api_gateway_integration.menu_all_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.menu_search_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.menu_id_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.menu_update_id_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_delete.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_all_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_id_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_restaurant_id_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_whatsapp_whatsapp_get.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_update_id_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_response_twilio_webhook_post.integration_http_method),
-      jsonencode(aws_api_gateway_integration.bot_response_twilio_webhook_options.integration_http_method)
-    ]))
+    redeployment = sha1(jsonencode({
+      user_service            = aws_lambda_function.user_service.source_code_hash,
+      restaurant_menu_service = aws_lambda_function.restaurant_menu_service.source_code_hash,
+      bot_service             = aws_lambda_function.bot_service.source_code_hash,
+    }))
   }
 
   lifecycle {
