@@ -231,7 +231,7 @@
                     echo "TF_VAR_twilio_auth_token=${{ secrets.TWILIO_AUTH_TOKEN }}" >> $GITHUB_ENV
 
                 - name: Set up Terraform
-                  uses: hashicorp/setup-terraform@v1
+                  uses: hashicorp/setup-terraform@v3
                   with:
                     terraform_version: 5.61.0
 
