@@ -778,7 +778,7 @@ resource "aws_lambda_permission" "user_service" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.user_service.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.restaurant_menu_api.execution_arn}/*/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.restaurant_menu_api.execution_arn}/*/*/*/*/*/*"
 }
 
 # Invoke permission for restaurant_menu_service
