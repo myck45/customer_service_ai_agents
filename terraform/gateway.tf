@@ -837,11 +837,6 @@ resource "aws_api_gateway_deployment" "restaurant_menu_api_deployment" {
   description = "Deployment for the restaurant menu API"
 
   triggers = {
-    lambda_changes = sha1(jsonencode({
-      user_service_version            = aws_lambda_function.user_service.source_code_hash
-      restaurant_menu_service_version = aws_lambda_function.restaurant_menu_service.source_code_hash
-      bot_service_version             = aws_lambda_function.bot_service.source_code_hash
-    }))
 
     integrations = sha1(jsonencode({
       user_post_integration                           = aws_api_gateway_integration.user_post.uri
