@@ -76,7 +76,7 @@ resource "aws_api_gateway_resource" "user_update_id" {
 # Resource for API Gateway /api/v1/user/login endpoint
 resource "aws_api_gateway_resource" "user_login" {
   rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api.id
-  parent_id   = aws_api_gateway_rest_api.restaurant_menu_api.root_resource_id
+  parent_id   = aws_api_gateway_rest_api.user.id
   path_part   = "login"
 }
 

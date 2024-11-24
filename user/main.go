@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/proyectos01-a/shared/config"
 	"github.com/proyectos01-a/shared/data"
-	"github.com/proyectos01-a/shared/handlers"
 	"github.com/proyectos01-a/shared/utils"
 	"github.com/proyectos01-a/user/auth"
 	"github.com/proyectos01-a/user/controller"
@@ -43,14 +42,11 @@ func init() {
 	// Instance auth service
 	authService := service.NewAuthServiceImpl(auth, bcryptUtil, userRepo)
 
-	// Instance response handler
-	responseHandler := handlers.NewResponseHandlersImpl()
-
 	// Instance controller
-	userController := controller.NewUserControllerImpl(userService, responseHandler)
+	userController := controller.NewUserControllerImpl(userService)
 
 	// Instance auth controller
-	authController := controller.NewAuthControllerImpl(authService, responseHandler)
+	authController := controller.NewAuthControllerImpl(authService)
 
 	// Instance router
 	r = router.NewRouter(userController, authController)
@@ -65,22 +61,15 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 	if err != nil {
 		logrus.WithError(err).Error("Error handling request")
 		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusInternalServerError,
-			Body:       "Gateway error, check logs for more information",
-			Headers: map[string]string{
-				"Access-Control-Allow-Origin":  "*",
-				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-				"Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
+				StatusCode: http.StatusInternalServerError,
+				Body:       "Gateway error, check logs for more information",
 			},
-		}, err
+			err
 
 	}
 
 	logrus.Info("Request handled successfully")
 
-	res.Headers["Access-Control-Allow-Origin"] = "*"
-	res.Headers["Access-Control-Allow-Headers"] = "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
-	res.Headers["Access-Control-Allow-Methods"] = "OPTIONS,POST,GET,PUT,DELETE"
 	return res, nil
 }
 

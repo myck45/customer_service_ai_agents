@@ -42,6 +42,7 @@ require (
 
 require (
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
+	github.com/gin-contrib/cors v1.7.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	golang.org/x/sys v0.22.0 // indirect
 )
