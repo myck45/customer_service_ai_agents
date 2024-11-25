@@ -214,7 +214,7 @@
                 - name: Configure AWS credentials using OIDC
                   uses: aws-actions/configure-aws-credentials@v2
                   with:
-                    role-to-assume: arn:aws:iam::992382698192:role/Proyecto01Access
+                    role-to-assume: arn:aws:iam::202533528050:role/restaurant_menu
                     aws-region: sa-east-1
                     audience: sts.amazonaws.com
 

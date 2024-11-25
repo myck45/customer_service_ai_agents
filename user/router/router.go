@@ -50,10 +50,10 @@ func (r *Router) InitRoutes() *Router {
 		{
 			userRoute.POST("", r.userController.CreateUser)
 			userRoute.DELETE("/:id", r.userController.DeleteUser)
-			userRoute.GET("/all", r.userController.GetAllUsers)
+			userRoute.GET("", r.userController.GetAllUsers)
 			userRoute.GET("/:id", r.userController.GetUserByID)
 			userRoute.GET("/email/:email", r.userController.GetUserByEmail)
-			userRoute.POST("/update/:id", r.userController.UpdateUser)
+			userRoute.PUT("/:id", r.userController.UpdateUser)
 			userRoute.POST("/login", r.loginController.Login)
 		}
 	}
