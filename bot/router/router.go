@@ -35,20 +35,16 @@ func (r *Router) InitRoutes() *Router {
 
 	baseRoute := router.Group("/api/v1")
 	{
-		botCRUDRoute := baseRoute.Group("/bot")
+		botRoute := baseRoute.Group("/bot")
 		{
-			botCRUDRoute.POST("", r.botCRUDController.CreateBot)
-			botCRUDRoute.DELETE("/:id", r.botCRUDController.DeleteBotByID)
-			botCRUDRoute.GET("/all", r.botCRUDController.GetAllBots)
-			botCRUDRoute.GET("/:id", r.botCRUDController.GetBotByID)
-			botCRUDRoute.GET("/restaurant/:id", r.botCRUDController.GetBotByRestaurantID)
-			botCRUDRoute.GET("/whatsapp/:whatsapp", r.botCRUDController.GetBotByWspNumber)
-			botCRUDRoute.POST("/update/:id", r.botCRUDController.UpdateBot)
-		}
-
-		botRoute := baseRoute.Group("/bot-response")
-		{
-			botRoute.POST("/twilio/webhook", r.botController.BotResponse)
+			botRoute.POST("", r.botCRUDController.CreateBot)
+			botRoute.DELETE("/:id", r.botCRUDController.DeleteBotByID)
+			botRoute.GET("", r.botCRUDController.GetAllBots)
+			botRoute.GET("/:id", r.botCRUDController.GetBotByID)
+			botRoute.GET("/restaurant/:id", r.botCRUDController.GetBotByRestaurantID)
+			botRoute.GET("/whatsapp/:whatsapp", r.botCRUDController.GetBotByWspNumber)
+			botRoute.PUT("/:id", r.botCRUDController.UpdateBot)
+			botRoute.POST("/twilio", r.botController.BotResponse)
 		}
 	}
 

@@ -39,19 +39,19 @@ func (r *Router) InitRoutes() *Router {
 		{
 			restaurantRoute.POST("", r.restaurantController.CreateRestaurant)
 			restaurantRoute.DELETE("/:id", r.restaurantController.DeleteRestaurant)
-			restaurantRoute.GET("/all", r.restaurantController.GetAllRestaurants)
+			restaurantRoute.GET("", r.restaurantController.GetAllRestaurants)
 			restaurantRoute.GET("/:id", r.restaurantController.GetRestaurantByID)
-			restaurantRoute.POST("/update/:id", r.restaurantController.UpdateRestaurant)
+			restaurantRoute.PUT("/:id", r.restaurantController.UpdateRestaurant)
 		}
 
 		menuRoute := baseRoute.Group("/menu")
 		{
 			menuRoute.POST("", r.menuController.CreateMenu)
 			menuRoute.DELETE("/:id", r.menuController.DeleteMenu)
-			menuRoute.GET("/all", r.menuController.GetAllMenus)
+			menuRoute.GET("", r.menuController.GetAllMenus)
 			menuRoute.GET("/search", r.menuController.SemanticSearchMenu)
 			menuRoute.GET("/:id", r.menuController.GetMenuByID)
-			menuRoute.POST("/update/:id", r.menuController.UpdateMenu)
+			menuRoute.PUT("/:id", r.menuController.UpdateMenu)
 		}
 	}
 
