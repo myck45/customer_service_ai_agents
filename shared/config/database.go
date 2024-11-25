@@ -20,7 +20,12 @@ func DatabaseConnection() *gorm.DB {
 
 	sqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
 		host, port, user, password, dbname)
-	db, err := gorm.Open(postgres.Open(sqlInfo), &gorm.Config{})
+
+	gormConfig := &gorm.Config{
+		PrepareStmt: false,
+	}
+
+	db, err := gorm.Open(postgres.Open(sqlInfo), gormConfig)
 	if err != nil {
 		logrus.Fatalf("Error connecting to database: %v", err)
 		panic("Failed to connect to database")
