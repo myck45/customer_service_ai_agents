@@ -45,6 +45,7 @@ resource "aws_api_gateway_deployment" "restaurant_menu_api_gateway_deployment" {
     aws_api_gateway_integration.bot_integration_get_by_restaurant_id,
     aws_api_gateway_integration.bot_integration_get_by_whatsapp,
     aws_api_gateway_integration.bot_integration_put,
+    aws_api_gateway_integration.bot_integration_post_twilio,
   ]
 
   rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
@@ -76,6 +77,7 @@ resource "aws_api_gateway_deployment" "restaurant_menu_api_gateway_deployment" {
       bot_integration_get_by_restaurant_id = aws_api_gateway_integration.bot_integration_get_by_restaurant_id.id,
       bot_integration_get_by_whatsapp      = aws_api_gateway_integration.bot_integration_get_by_whatsapp.id,
       bot_integration_put                  = aws_api_gateway_integration.bot_integration_put.id,
+      bot_integration_post_twilio          = aws_api_gateway_integration.bot_integration_post_twilio.id,
     }))
   }
 

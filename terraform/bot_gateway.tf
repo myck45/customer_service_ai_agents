@@ -189,6 +189,17 @@ resource "aws_api_gateway_integration" "bot_integration_put" {
   uri                     = aws_lambda_function.bot_service.invoke_arn
 }
 
+# Integration for POST /api/v1/bot/twilio - Bot response using Twilio
+resource "aws_api_gateway_integration" "bot_integration_post_twilio" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id = aws_api_gateway_resource.bot_twilio_resource.id
+  http_method = aws_api_gateway_method.bot_method_post_twilio.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.bot_service.invoke_arn
+}
+
 # Invoke permission for  API Gateway to call Lambda function
 resource "aws_lambda_permission" "restaurant_menu_gateway_invoke_bot_service" {
   statement_id  = "AllowAPIGatewayInvoke"
