@@ -26,6 +26,12 @@ func init() {
 	// Instance Database
 	db := config.DatabaseConnection()
 
+	// Instance Supabase client
+	supabaseDB, err := config.NewSupabaseClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error initializing Supabase client")
+	}
+
 	// Instance openai client
 	openaiClient := providers.NewOpenAIClient()
 
@@ -36,7 +42,7 @@ func init() {
 	restaurantRepo := data.NewRestaurantRepositoryImpl(db)
 
 	// Instance menu repository
-	menuRepo := data.NewMenuRepositoryImpl(db)
+	menuRepo := data.NewMenuRepositoryImpl(db, supabaseDB)
 
 	// Instance Restaurant Service
 	restaurantService := service.NewRestaurantServiceImpl(restaurantRepo)

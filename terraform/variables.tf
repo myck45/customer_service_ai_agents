@@ -51,3 +51,15 @@ variable "twilio_auth_token" {
   type        = string
   sensitive   = true
 }
+
+variable "supabase_url" {
+  description = "The URL for Supabase"
+  type        = string
+  sensitive   = true
+}
+
+variable "supabase_key" {
+  description = "The key for Supabase"
+  type        = string
+  sensitive   = true
+}

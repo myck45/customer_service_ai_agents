@@ -1,16 +1,19 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/proyectos01-a/shared/dto"
 	"github.com/proyectos01-a/shared/models"
 	"github.com/sirupsen/logrus"
+	"github.com/supabase-community/supabase-go"
 	"gorm.io/gorm"
 )
 
 type MenuRepositoryImpl struct {
-	db *gorm.DB
+	db         *gorm.DB
+	supabaseDB *supabase.Client
 }
 
 // CreateMenu implements MenuRepository.
@@ -68,32 +71,27 @@ func (m *MenuRepositoryImpl) GetMenuByID(id uint) (*models.Menu, error) {
 
 // SemanticSearchMenu implements MenuRepository.
 func (m *MenuRepositoryImpl) SemanticSearchMenu(queryEmbedding []float32, similarityThreshold float32, matchCount int, restaurantID uint) ([]dto.MenuSearchResponse, error) {
-	var results []dto.MenuSearchResponse
-
-	// result := m.db.Model(&models.Menu{}).
-	// 	Select(`
-	// 		id,
-	// 		item_name,
-	// 		price,
-	// 		description,
-	// 		likes,
-	// 		embedding <#> ? AS similarity
-	// 	`, queryEmbedding).
-	// 	Where("restaurant_id = ?", restaurantID).
-	// 	Where("embedding <#> ? < ?", queryEmbedding, similarityThreshold).
-	// 	Order("similarity").
-	// 	Limit(matchCount).
-	// 	Scan(&results)
-	result := m.db.Raw(`
-		SELECT * FROM search_menu(?, ?, ?, ?)
-	`, queryEmbedding, similarityThreshold, matchCount, restaurantID).Scan(&results)
-
-	if result.Error != nil {
-		logrus.WithError(result.Error).Error("Error performing semantic search")
-		return nil, fmt.Errorf("error performing semantic search")
+	params := map[string]interface{}{
+		"query_embedding":      queryEmbedding,
+		"similarity_threshold": similarityThreshold,
+		"match_count":          matchCount,
+		"restaurant_id":        restaurantID,
 	}
 
-	return results, nil
+	res := m.supabaseDB.Rpc("search_menu", "exact", params)
+	if res == "" {
+		logrus.Error("Error executing search_menu function")
+		return nil, fmt.Errorf("error executing search_menu function")
+	}
+
+	var searchResults []dto.MenuSearchResponse
+	err := json.Unmarshal([]byte(res), &searchResults)
+	if err != nil {
+		logrus.WithError(err).Error("Error unmarshalling search results")
+		return nil, fmt.Errorf("error unmarshalling search results")
+	}
+
+	return searchResults, nil
 }
 
 // UpdateMenu implements MenuRepository.
@@ -107,8 +105,9 @@ func (m *MenuRepositoryImpl) UpdateMenu(menu *models.Menu) error {
 	return nil
 }
 
-func NewMenuRepositoryImpl(db *gorm.DB) MenuRepository {
+func NewMenuRepositoryImpl(db *gorm.DB, supabaseDB *supabase.Client) MenuRepository {
 	return &MenuRepositoryImpl{
-		db: db,
+		db:         db,
+		supabaseDB: supabaseDB,
 	}
 }

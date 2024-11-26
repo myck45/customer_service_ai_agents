@@ -20,6 +20,8 @@ resource "aws_lambda_function" "user_service" {
       JWT_SECRET         = var.jwt_secret
       TWILIO_ACCOUNT_SID = var.twilio_account_sid
       TWILIO_AUTH_TOKEN  = var.twilio_auth_token
+      SUPABASE_URL       = var.supabase_url
+      SUPABASE_KEY       = var.supabase_key
     }
   }
 }
@@ -46,6 +48,8 @@ resource "aws_lambda_function" "restaurant_menu_service" {
       JWT_SECRET         = var.jwt_secret
       TWILIO_ACCOUNT_SID = var.twilio_account_sid
       TWILIO_AUTH_TOKEN  = var.twilio_auth_token
+      SUPABASE_URL       = var.supabase_url
+      SUPABASE_KEY       = var.supabase_key
     }
   }
 }
@@ -72,6 +76,8 @@ resource "aws_lambda_function" "bot_service" {
       JWT_SECRET         = var.jwt_secret
       TWILIO_ACCOUNT_SID = var.twilio_account_sid
       TWILIO_AUTH_TOKEN  = var.twilio_auth_token
+      SUPABASE_URL       = var.supabase_url
+      SUPABASE_KEY       = var.supabase_key
     }
   }
 }
