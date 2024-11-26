@@ -54,7 +54,6 @@ func DatabaseConnection() *gorm.DB {
 	err = db.Exec(searchMenuSQL).Error
 	if err != nil {
 		logrus.Warnf("Error executing SQL file: %v", err)
-		panic("Failed to execute SQL file")
 	}
 
 	return db
