@@ -70,20 +70,34 @@ func (m *MenuRepositoryImpl) GetMenuByID(id uint) (*models.Menu, error) {
 func (m *MenuRepositoryImpl) SemanticSearchMenu(queryEmbedding []float32, similarityThreshold float32, matchCount int, restaurantID uint) ([]dto.MenuSearchResponse, error) {
 	var results []dto.MenuSearchResponse
 
-	result := m.db.Model(&models.Menu{}).
-		Select(`
+	// result := m.db.Model(&models.Menu{}).
+	// 	Select(`
+	// 		id,
+	// 		item_name,
+	// 		price,
+	// 		description,
+	// 		likes,
+	// 		embedding <#> ? AS similarity
+	// 	`, queryEmbedding).
+	// 	Where("restaurant_id = ?", restaurantID).
+	// 	Where("embedding <#> ? < ?", queryEmbedding, similarityThreshold).
+	// 	Order("similarity").
+	// 	Limit(matchCount).
+	// 	Scan(&results)
+
+	result := m.db.Raw(`
+		SELECT
 			id,
 			item_name,
 			price,
 			description,
 			likes,
 			embedding <#> ? AS similarity
-		`, queryEmbedding).
-		Where("restaurant_id = ?", restaurantID).
-		Where("embedding <#> ? < ?", queryEmbedding, similarityThreshold).
-		Order("similarity").
-		Limit(matchCount).
-		Scan(&results)
+		FROM menus
+		WHERE restaurant_id = ? AND embedding <#> ? < ?
+		ORDER BY similarity
+		LIMIT ?
+	`, queryEmbedding, restaurantID, queryEmbedding, similarityThreshold, matchCount).Scan(&results)
 
 	if result.Error != nil {
 		logrus.WithError(result.Error).Error("Error performing semantic search")
