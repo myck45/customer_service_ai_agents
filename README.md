@@ -79,3 +79,6 @@ erDiagram
     RESTAURANT ||--o{ BOT : "has many"
     RESTAURANT ||--o{ CHAT_HISTORY : "has many"
 ```
+
+
+## Endpoints
