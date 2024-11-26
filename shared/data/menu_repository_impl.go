@@ -84,20 +84,9 @@ func (m *MenuRepositoryImpl) SemanticSearchMenu(queryEmbedding []float32, simila
 	// 	Order("similarity").
 	// 	Limit(matchCount).
 	// 	Scan(&results)
-
 	result := m.db.Raw(`
-		SELECT
-			id,
-			item_name,
-			price,
-			description,
-			likes,
-			embedding <#> ? AS similarity
-		FROM menus
-		WHERE restaurant_id = ? AND embedding <#> ? < ?
-		ORDER BY similarity
-		LIMIT ?
-	`, queryEmbedding, restaurantID, queryEmbedding, similarityThreshold, matchCount).Scan(&results)
+		SELECT * FROM search_menu(?, ?, ?, ?)
+	`, queryEmbedding, similarityThreshold, matchCount, restaurantID).Scan(&results)
 
 	if result.Error != nil {
 		logrus.WithError(result.Error).Error("Error performing semantic search")

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/proyectos01-a/shared/models"
@@ -47,6 +48,14 @@ func DatabaseConnection() *gorm.DB {
 
 	if err != nil {
 		logrus.Warnf("Error migrating models: %v", err)
+	}
+
+	// Load SQL functions
+	searchMenuSQL := filepath.Join("shared", "sql", "search_menu.sql")
+	err = db.Exec(searchMenuSQL).Error
+	if err != nil {
+		logrus.Warnf("Error executing SQL file: %v", err)
+		panic("Failed to execute SQL file")
 	}
 
 	return db
