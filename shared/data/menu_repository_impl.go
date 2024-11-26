@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/pgvector/pgvector-go"
 	"github.com/proyectos01-a/shared/dto"
 	"github.com/proyectos01-a/shared/models"
 	"github.com/sirupsen/logrus"
@@ -14,6 +15,31 @@ import (
 type MenuRepositoryImpl struct {
 	db         *gorm.DB
 	supabaseDB *supabase.Client
+}
+
+// SemanticSearchWithSupavisor implements MenuRepository.
+func (m *MenuRepositoryImpl) SemanticSearchWithSupabase(queryEmbedding []float32, similarityThreshold float32, matchCount int, restaurantID uint) ([]dto.MenuSearchResponse, error) {
+	params := map[string]interface{}{
+		"query_embedding":      queryEmbedding,
+		"similarity_threshold": similarityThreshold,
+		"match_count":          matchCount,
+		"restaurant_id":        restaurantID,
+	}
+
+	res := m.supabaseDB.Rpc("search_menu", "exact", params)
+	if res == "" {
+		logrus.Error("Error executing search_menu function")
+		return nil, fmt.Errorf("error executing search_menu function")
+	}
+
+	var searchResults []dto.MenuSearchResponse
+	err := json.Unmarshal([]byte(res), &searchResults)
+	if err != nil {
+		logrus.WithError(err).Error("Error unmarshalling search results")
+		return nil, fmt.Errorf("error unmarshalling search results")
+	}
+
+	return searchResults, nil
 }
 
 // CreateMenu implements MenuRepository.
@@ -71,27 +97,31 @@ func (m *MenuRepositoryImpl) GetMenuByID(id uint) (*models.Menu, error) {
 
 // SemanticSearchMenu implements MenuRepository.
 func (m *MenuRepositoryImpl) SemanticSearchMenu(queryEmbedding []float32, similarityThreshold float32, matchCount int, restaurantID uint) ([]dto.MenuSearchResponse, error) {
-	params := map[string]interface{}{
-		"query_embedding":      queryEmbedding,
-		"similarity_threshold": similarityThreshold,
-		"match_count":          matchCount,
-		"restaurant_id":        restaurantID,
-	}
+	var results []dto.MenuSearchResponse
 
-	res := m.supabaseDB.Rpc("search_menu", "exact", params)
-	if res == "" {
-		logrus.Error("Error executing search_menu function")
-		return nil, fmt.Errorf("error executing search_menu function")
-	}
+	vectorEmbedding := pgvector.NewVector(queryEmbedding)
 
-	var searchResults []dto.MenuSearchResponse
-	err := json.Unmarshal([]byte(res), &searchResults)
-	if err != nil {
-		logrus.WithError(err).Error("Error unmarshalling search results")
-		return nil, fmt.Errorf("error unmarshalling search results")
-	}
+	result := m.db.Model(&models.Menu{}).
+		Select(`
+			id,
+			item_name,
+			price,
+			description,
+			likes,
+			embedding <#> ? AS similarity
+		`, vectorEmbedding).
+		Where("restaurant_id = ?", restaurantID).
+		Where("embedding <#> ? < ?", vectorEmbedding, similarityThreshold).
+		Order("similarity").
+		Limit(matchCount).
+		Scan(&results)
 
-	return searchResults, nil
+	if result.Error != nil {
+		logrus.WithError(result.Error).Error("Error fetching menu")
+		return nil, fmt.Errorf("error fetching menu")
+	}
+	return results, nil
+
 }
 
 // UpdateMenu implements MenuRepository.

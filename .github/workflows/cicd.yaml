@@ -229,6 +229,8 @@
                     echo "TF_VAR_jwt_secret=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
                     echo "TF_VAR_twilio_account_sid=${{ secrets.TWILIO_ACCOUNT_SID }}" >> $GITHUB_ENV
                     echo "TF_VAR_twilio_auth_token=${{ secrets.TWILIO_AUTH_TOKEN }}" >> $GITHUB_ENV
+                    echo "TF_VAR_supabase_url=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+                    echo "TF_VAR_supabase_key=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
 
                 - name: Set up Terraform
                   uses: hashicorp/setup-terraform@v3
