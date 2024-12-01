@@ -78,8 +78,18 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 		return fmt.Errorf("failed to search menu: %v", err)
 	}
 
+	// Get the chat history
+	chatHistory, err := b.chatHistoryRepo.GetChatHistory(userWspNumber, botWspNumber, botInfo.RestaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get chat history")
+		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
+			logrus.WithError(twErr).Error("failed to send response")
+		}
+		return fmt.Errorf("failed to get chat history: %v", err)
+	}
+
 	// Prepare the chat messages
-	messages, err := b.PrepareChatMessages(chat, semanticContext, botInfo)
+	messages, err := b.PrepareChatMessages(chatHistory, semanticContext, botInfo)
 	if err != nil {
 		logrus.WithError(err).Error("failed to prepare chat messages")
 		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
@@ -87,6 +97,12 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 		}
 		return fmt.Errorf("failed to prepare chat messages: %v", err)
 	}
+
+	// Append the current user message
+	messages = append(messages, openai.ChatCompletionMessage{
+		Role:    "user",
+		Content: userMessage,
+	})
 
 	// Generate the bot response
 	botResponse, err := b.GenerateBotResponse(context.Background(), messages)
@@ -143,11 +159,7 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 }
 
 // PrepareChatMessages implements BotService.
-func (b *BotServiceImpl) PrepareChatMessages(chat *req.TwilioWebhook, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error) {
-
-	var senderWspNumber string = chat.From
-	var botWspNumber string = chat.To
-	var restaurantID uint = botInfo.RestaurantID
+func (b *BotServiceImpl) PrepareChatMessages(chatHistory []models.ChatHistory, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error) {
 
 	contextStr, err := json.Marshal(semanticContext)
 	if err != nil {
@@ -164,12 +176,6 @@ func (b *BotServiceImpl) PrepareChatMessages(chat *req.TwilioWebhook, semanticCo
 	systemPrompt, err := b.SystemPrompt(botConfig)
 	if err != nil {
 		logrus.WithError(err).Error("failed to generate system prompt")
-		return nil, err
-	}
-
-	chatHistory, err := b.chatHistoryRepo.GetChatHistory(senderWspNumber, botWspNumber, restaurantID)
-	if err != nil {
-		logrus.WithError(err).Error("failed to get chat history")
 		return nil, err
 	}
 
@@ -190,11 +196,6 @@ func (b *BotServiceImpl) PrepareChatMessages(chat *req.TwilioWebhook, semanticCo
 			Content: chat.BotResponse,
 		})
 	}
-
-	messages = append(messages, openai.ChatCompletionMessage{
-		Role:    "user",
-		Content: chat.Body,
-	})
 
 	return messages, nil
 }
