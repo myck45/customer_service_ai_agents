@@ -18,6 +18,7 @@
 - [ ] Mejorar el System Prompt base del bot, para que la personalidad del bot sea mas natural
 - [ ] Agregar Function calls para los bots, para que puedan registrar reservaciones y pedidos.
 - [ ] Implementar la lógica para que si es el primer mensaje del día de un usuario, el bot envié automáticamente la carta del restaurant mas un mensaje de bienvenida
+- [ ] Implementar la lógica para guardar los horarios de atención de los restaurantes, para que el bot responda con un mensaje personalizado en caso de que se haga alguna consulta fuera de horario
 
 ## Restaurant Service
 

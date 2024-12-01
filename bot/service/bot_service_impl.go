@@ -25,6 +25,10 @@ type BotServiceImpl struct {
 	menuRepo        data.MenuRepository
 }
 
+const (
+	botErrResp = "Lo siento, por el momento no puedo responder a tu consulta. Por favor, intenta más tarde."
+)
+
 // BotResponse implements BotService.
 func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 
@@ -42,6 +46,9 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 	bot, err := b.botRepo.GetBotByWspNumber(botWspNumber)
 	if err != nil {
 		logrus.WithError(err).Error("failed to get bot")
+		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
+			logrus.WithError(twErr).Error("failed to send response")
+		}
 		return fmt.Errorf("failed to get bot: %v", err)
 	}
 
@@ -55,6 +62,9 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 	userMsgEmbedding, err := b.botUtils.GenerateEmbedding(userMessage)
 	if err != nil {
 		logrus.WithError(err).Error("failed to generate embedding")
+		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
+			logrus.WithError(twErr).Error("failed to send response")
+		}
 		return fmt.Errorf("failed to generate embedding: %v", err)
 	}
 
@@ -62,6 +72,9 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 	semanticContext, err := b.menuRepo.SemanticSearchMenu(userMsgEmbedding, similarityThreshold, matchCount, botInfo.RestaurantID)
 	if err != nil {
 		logrus.WithError(err).Error("failed to search menu")
+		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
+			logrus.WithError(twErr).Error("failed to send response")
+		}
 		return fmt.Errorf("failed to search menu: %v", err)
 	}
 
@@ -69,6 +82,9 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 	messages, err := b.PrepareChatMessages(chat, semanticContext, botInfo)
 	if err != nil {
 		logrus.WithError(err).Error("failed to prepare chat messages")
+		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
+			logrus.WithError(twErr).Error("failed to send response")
+		}
 		return fmt.Errorf("failed to prepare chat messages: %v", err)
 	}
 
@@ -76,6 +92,9 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 	botResponse, err := b.GenerateBotResponse(context.Background(), messages)
 	if err != nil {
 		logrus.WithError(err).Error("failed to generate bot response")
+		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
+			logrus.WithError(twErr).Error("failed to send response")
+		}
 		return fmt.Errorf("failed to generate bot response: %v", err)
 	}
 
