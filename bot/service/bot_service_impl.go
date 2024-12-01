@@ -26,7 +26,7 @@ type BotServiceImpl struct {
 }
 
 const (
-	botErrResp = "Lo siento, por el momento no puedo responder a tu consulta. Por favor, intenta más tarde."
+	botErrResp = "Lo siento 😔💔, por el momento no puedo responder a tu consulta 🤖❌. Por favor, intenta de nuevo más tarde 🙏✨."
 )
 
 // BotResponse implements BotService.
