@@ -31,7 +31,7 @@ func (r *ResponseHandlersImpl) HandleSuccess(c *gin.Context, statusCode int, mes
 		Msg:    message,
 		Data:   data,
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(statusCode, res)
 }
 
 func NewResponseHandlersImpl() ResponseHandlers {

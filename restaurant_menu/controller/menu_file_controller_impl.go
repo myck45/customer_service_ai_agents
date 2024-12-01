@@ -21,10 +21,19 @@ type MenuFileControllerImpl struct {
 // CreateMenuFile implements MenuFileController.
 func (m *MenuFileControllerImpl) CreateMenuFile(c *gin.Context) {
 
+	// Limit file size (16 MB)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 16<<20)
+
 	// Get file from request
 	file, err := c.FormFile("file")
 	if err != nil {
 		m.responseHandler.HandleError(c, http.StatusBadRequest, "Error getting file from request", err)
+		return
+	}
+
+	// Verificación adicional de tamaño
+	if file.Size > 16*1024*1024 {
+		m.responseHandler.HandleError(c, http.StatusRequestEntityTooLarge, "File exceeds maximum size of 16MB", nil)
 		return
 	}
 
