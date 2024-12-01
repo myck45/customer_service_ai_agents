@@ -50,6 +50,7 @@ resource "aws_lambda_function" "restaurant_menu_service" {
       TWILIO_AUTH_TOKEN  = var.twilio_auth_token
       SUPABASE_URL       = var.supabase_url
       SUPABASE_KEY       = var.supabase_key
+      S3_BUCKET_NAME     = aws_s3_bucket.restaurant_menu_bucket.bucket
     }
   }
 }

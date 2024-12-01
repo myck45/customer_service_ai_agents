@@ -31,7 +31,7 @@ func (m *MenuFileControllerImpl) CreateMenuFile(c *gin.Context) {
 		return
 	}
 
-	// Verificación adicional de tamaño
+	// Verify file size
 	if file.Size > 16*1024*1024 {
 		m.responseHandler.HandleError(c, http.StatusRequestEntityTooLarge, "File exceeds maximum size of 16MB", nil)
 		return

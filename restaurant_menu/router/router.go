@@ -14,13 +14,19 @@ import (
 type Router struct {
 	restaurantController controller.RestaurantController
 	menuController       controller.MenuController
+	menuFileController   controller.MenuFileController
 	ginLambda            *ginadapter.GinLambda
 }
 
-func NewRouter(restaurantController controller.RestaurantController, menuController controller.MenuController) *Router {
+func NewRouter(
+	restaurantController controller.RestaurantController,
+	menuController controller.MenuController,
+	menuFileController controller.MenuFileController,
+) *Router {
 	return &Router{
 		restaurantController: restaurantController,
 		menuController:       menuController,
+		menuFileController:   menuFileController,
 	}
 }
 
@@ -28,6 +34,9 @@ func (r *Router) InitRoutes() *Router {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
+
+	// Limit upload file size for multipart forms
+	router.MaxMultipartMemory = 16 << 20 // 16 MB
 
 	//Configure CORS
 	router.Use(cors.New(cors.Config{
@@ -64,6 +73,15 @@ func (r *Router) InitRoutes() *Router {
 			menuRoute.GET("/search", r.menuController.SemanticSearchMenu)
 			menuRoute.GET("/:id", r.menuController.GetMenuByID)
 			menuRoute.PUT("/:id", r.menuController.UpdateMenu)
+		}
+
+		menuFileRoute := baseRoute.Group("/menu-files")
+		{
+			menuFileRoute.POST("", r.menuFileController.CreateMenuFile)
+			menuFileRoute.DELETE("/:id", r.menuFileController.DeleteMenuFile)
+			menuFileRoute.GET("/:id", r.menuFileController.GetMenuFileByID)
+			menuFileRoute.GET("/restaurant/:restaurant_id", r.menuFileController.GetMenuFileByRestaurantID)
+			menuFileRoute.PUT("/:id", r.menuFileController.UpdateMenuFile)
 		}
 	}
 

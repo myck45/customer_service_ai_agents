@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -32,6 +33,8 @@ func init() {
 		logrus.WithError(err).Fatal("Error initializing Supabase client")
 	}
 
+	s3Client := providers.NewAWSS3Client("sa-east-1")
+
 	// Instance openai client
 	openaiClient := providers.NewOpenAIClient()
 
@@ -44,11 +47,23 @@ func init() {
 	// Instance menu repository
 	menuRepo := data.NewMenuRepositoryImpl(db, supabaseDB)
 
+	// S3 Bucket name
+	s3BucketName := os.Getenv("S3_BUCKET_NAME")
+
+	// Instance menu file repository
+	s3FileRepo := data.NewS3FileRepositoryImpl(s3Client, s3BucketName, "menu-files")
+
+	// Instance menu file repository
+	menuFileRepo := data.NewMenuFileRepositoryImpl(db)
+
 	// Instance Restaurant Service
 	restaurantService := service.NewRestaurantServiceImpl(restaurantRepo)
 
 	// Instance Menu Service
 	menuService := service.NewMenuServiceImpl(menuRepo, botUtils)
+
+	// Instance Menu File Service
+	menuFileService := service.NewMenuFileService(menuFileRepo, s3FileRepo)
 
 	// Instance Response Handler
 	responseHandler := handlers.NewResponseHandlersImpl()
@@ -59,8 +74,11 @@ func init() {
 	// Instance Menu Controller
 	menuController := controller.NewMenuControllerImpl(menuService, responseHandler)
 
+	// Instance Menu File Controller
+	menuFileController := controller.NewMenuFileControllerImpl(menuFileService, responseHandler)
+
 	// Instance Router
-	r = router.NewRouter(restaurantController, menuController)
+	r = router.NewRouter(restaurantController, menuController, menuFileController)
 	r.InitRoutes()
 
 	logrus.Info("Restaurant_menu service initialized")
