@@ -242,6 +242,129 @@ resource "aws_api_gateway_integration" "menu_integration_put" {
   uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
 }
 
+# Resource for API Gateway /api/v1/menu-files
+resource "aws_api_gateway_resource" "menu_files_resource" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  parent_id   = aws_api_gateway_resource.v1.id
+  path_part   = "menu-files"
+}
+
+# Resource for API Gateway /api/v1/menu-files/{id}
+resource "aws_api_gateway_resource" "menu_files_id_resource" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  parent_id   = aws_api_gateway_resource.menu_files_resource.id
+  path_part   = "{id}"
+}
+
+# Resource for API Gateway /api/v1/menu-files/restaurant
+resource "aws_api_gateway_resource" "menu_files_restaurant_resource" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  parent_id   = aws_api_gateway_resource.menu_files_resource.id
+  path_part   = "restaurant"
+}
+
+# Resource for API Gateway /api/v1/menu-files/restaurant/{restaurant_id}
+resource "aws_api_gateway_resource" "menu_files_restaurant_id_resource" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  parent_id   = aws_api_gateway_resource.menu_files_restaurant_resource.id
+  path_part   = "{restaurant_id}"
+}
+
+# Method POST for /api/v1/menu-files - Upload menu file
+resource "aws_api_gateway_method" "menu_files_method_post" {
+  rest_api_id   = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id   = aws_api_gateway_resource.menu_files_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# Method DELETE for /api/v1/menu-files/{id} - Delete menu file
+resource "aws_api_gateway_method" "menu_files_method_delete" {
+  rest_api_id   = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id   = aws_api_gateway_resource.menu_files_id_resource.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}
+
+# Method GET for /api/v1/menu-files/{id} - Get menu file by id
+resource "aws_api_gateway_method" "menu_files_method_get_by_id" {
+  rest_api_id   = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id   = aws_api_gateway_resource.menu_files_id_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Method GET for /api/v1/menu-files/restaurant/{restaurant_id} - Get menu files by restaurant id
+resource "aws_api_gateway_method" "menu_files_method_get_by_restaurant_id" {
+  rest_api_id   = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id   = aws_api_gateway_resource.menu_files_restaurant_id_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+# Method PUT for /api/v1/menu-files/{id} - Update menu file
+resource "aws_api_gateway_method" "menu_files_method_put" {
+  rest_api_id   = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id   = aws_api_gateway_resource.menu_files_id_resource.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+# Integration for /api/v1/menu-files - Upload menu file
+resource "aws_api_gateway_integration" "menu_files_integration_post" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id = aws_api_gateway_resource.menu_files_resource.id
+  http_method = aws_api_gateway_method.menu_files_method_post.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
+}
+
+# Integration for /api/v1/menu-files/{id} - Delete menu file
+resource "aws_api_gateway_integration" "menu_files_integration_delete" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id = aws_api_gateway_resource.menu_files_id_resource.id
+  http_method = aws_api_gateway_method.menu_files_method_delete.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
+}
+
+# Integration for /api/v1/menu-files/{id} - Get menu file by id
+resource "aws_api_gateway_integration" "menu_files_integration_get_by_id" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id = aws_api_gateway_resource.menu_files_id_resource.id
+  http_method = aws_api_gateway_method.menu_files_method_get_by_id.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
+}
+
+# Integration for /api/v1/menu-files/restaurant/{restaurant_id} - Get menu files by restaurant id
+resource "aws_api_gateway_integration" "menu_files_integration_get_by_restaurant_id" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id = aws_api_gateway_resource.menu_files_restaurant_id_resource.id
+  http_method = aws_api_gateway_method.menu_files_method_get_by_restaurant_id.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
+}
+
+# Integration for /api/v1/menu-files/{id} - Update menu file
+resource "aws_api_gateway_integration" "menu_files_integration_put" {
+  rest_api_id = aws_api_gateway_rest_api.restaurant_menu_api_gateway.id
+  resource_id = aws_api_gateway_resource.menu_files_id_resource.id
+  http_method = aws_api_gateway_method.menu_files_method_put.http_method
+
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = aws_lambda_function.restaurant_menu_service.invoke_arn
+}
+
 # Invoke permission for API Gateway to call Lambda function
 resource "aws_lambda_permission" "restaurant_menu_gateway_invoke_restaurant_menu_service" {
   statement_id  = "AllowExecutionFromAPIGateway"
