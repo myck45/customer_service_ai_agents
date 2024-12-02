@@ -74,10 +74,22 @@ erDiagram
         datetime deleted_at
     }
 
+    MENU_FILE {
+        uint id PK
+        uint restaurant_id FK
+        string file_name
+        string file_path
+        int64 file_size
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
+    }
+
     USER ||--o{ RESTAURANT : "has many"
     RESTAURANT ||--o{ MENU : "has many"
     RESTAURANT ||--o{ BOT : "has many"
     RESTAURANT ||--o{ CHAT_HISTORY : "has many"
+    RESTAURANT ||--o{ MENU_FILE : "has many"
 ```
 
 
