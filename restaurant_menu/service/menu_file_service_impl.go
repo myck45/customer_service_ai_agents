@@ -15,6 +15,30 @@ type MenuFileServiceImpl struct {
 	s3Repo       data.S3FileRepository
 }
 
+// GetMenuFilesURLByRestaurantID implements MenuFileService.
+func (m *MenuFileServiceImpl) GetMenuFilesURLByRestaurantID(restaurantID uint) ([]string, error) {
+
+	// Get details of menu files
+	menuFiles, err := m.menuFileRepo.GetMenuFileByRestaurantID(restaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("[MenuFileServiceImpl] failed to get menu files")
+		return nil, fmt.Errorf("failed to get menu files: %v", err)
+	}
+
+	// Map response
+	var menuFileURLs []string
+	for _, menuFile := range menuFiles {
+		fileURL, err := m.s3Repo.GetFileURL(menuFile.FileName, 120)
+		if err != nil {
+			logrus.WithError(err).Error("[MenuFileServiceImpl] failed to get file URL")
+			return nil, fmt.Errorf("failed to get file URL: %v", err)
+		}
+		menuFileURLs = append(menuFileURLs, fileURL)
+	}
+
+	return menuFileURLs, nil
+}
+
 // CreateMenuFile implements MenuFileService.
 func (m *MenuFileServiceImpl) CreateMenuFile(fileReq *req.CreateMenuFileReq, fileBytes []byte) (*res.MenuFileResponse, error) {
 

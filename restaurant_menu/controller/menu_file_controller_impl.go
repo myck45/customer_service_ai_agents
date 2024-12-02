@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/proyectos01-a/restaurantMenu/dto/req"
 	"github.com/proyectos01-a/restaurantMenu/service"
+	_ "github.com/proyectos01-a/shared/dto"
 	"github.com/proyectos01-a/shared/handlers"
 )
 
@@ -18,7 +19,20 @@ type MenuFileControllerImpl struct {
 	responseHandler handlers.ResponseHandlers
 }
 
-// CreateMenuFile implements MenuFileController.
+// CreateMenuFile godoc
+//
+//	@Summary		Create a new menu file
+//	@Description	create a new menu file with the input payload
+//	@Tags			menu-file
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			file				form		file				true	"Menu File"
+//	@Param			restaurant_id		form		int					true	"Restaurant ID"
+//	@Success		200					{object}	dto.BaseResponse	"Menu file created successfully"
+//	@Failure		400					{object}	dto.BaseResponse	"Error getting file from request"
+//	@Failure		413					{object}	dto.BaseResponse	"File exceeds maximum size of 16MB"
+//	@Failure		500					{object}	dto.BaseResponse	"Error creating menu file"
+//	@Router			/api/v1/menu-file	[post]
 func (m *MenuFileControllerImpl) CreateMenuFile(c *gin.Context) {
 
 	// Limit file size (16 MB)
@@ -85,7 +99,18 @@ func (m *MenuFileControllerImpl) CreateMenuFile(c *gin.Context) {
 	m.responseHandler.HandleSuccess(c, http.StatusOK, "Menu file created successfully", menuFile)
 }
 
-// DeleteMenuFile implements MenuFileController.
+// DeleteMenuFile godoc
+//
+//	@Summary		Delete a menu file
+//	@Description	delete a menu file with the input id
+//	@Tags			menu-file
+//	@Accept			json
+//	@Produce		json
+//	@Param			id						path		int					true	"Menu File ID"
+//	@Success		200						{object}	dto.BaseResponse	"Menu file deleted successfully"
+//	@Failure		400						{object}	dto.BaseResponse	"Invalid file ID"
+//	@Failure		500						{object}	dto.BaseResponse	"Error deleting menu file"
+//	@Router			/api/v1/menu-file/{id}	[delete]
 func (m *MenuFileControllerImpl) DeleteMenuFile(c *gin.Context) {
 	fileIDStr := c.Param("id")
 	fileID, err := strconv.ParseUint(fileIDStr, 10, 64)
@@ -102,7 +127,18 @@ func (m *MenuFileControllerImpl) DeleteMenuFile(c *gin.Context) {
 	m.responseHandler.HandleSuccess(c, http.StatusOK, "Menu file deleted successfully", nil)
 }
 
-// GetMenuFileByID implements MenuFileController.
+// GetMenuFileByID godoc
+//
+//	@Summary		Get a menu file by ID
+//	@Description	get a menu file with the input id
+//	@Tags			menu-file
+//	@Accept			json
+//	@Produce		json
+//	@Param			id						path		int											true	"Menu File ID"
+//	@Success		200						{object}	dto.BaseResponse{data=res.MenuFileResponse}	"Menu file fetched successfully"
+//	@Failure		400						{object}	dto.BaseResponse							"Invalid file ID"
+//	@Failure		500						{object}	dto.BaseResponse							"Error getting menu file"
+//	@Router			/api/v1/menu-file/{id}	[get]
 func (m *MenuFileControllerImpl) GetMenuFileByID(c *gin.Context) {
 	fileIDStr := c.Param("id")
 	fileID, err := strconv.ParseUint(fileIDStr, 10, 64)
@@ -120,7 +156,18 @@ func (m *MenuFileControllerImpl) GetMenuFileByID(c *gin.Context) {
 	m.responseHandler.HandleSuccess(c, http.StatusOK, "Menu file fetched successfully", menuFile)
 }
 
-// GetMenuFileByRestaurantID implements MenuFileController.
+// GetMenuFileByRestaurantID godoc
+//
+//	@Summary		Get menu files by restaurant ID
+//	@Description	get all menu files with the input restaurant ID
+//	@Tags			menu-file
+//	@Accept			json
+//	@Produce		json
+//	@Param			restaurant_id									path		int												true	"Restaurant ID"
+//	@Success		200												{object}	dto.BaseResponse{data=[]res.MenuFileResponse}	"Menu files fetched successfully"
+//	@Failure		400												{object}	dto.BaseResponse								"Invalid restaurant ID"
+//	@Failure		500												{object}	dto.BaseResponse								"Error getting menu files"
+//	@Router			/api/v1/menu-files/restaurant/{restaurant_id}	[get]
 func (m *MenuFileControllerImpl) GetMenuFileByRestaurantID(c *gin.Context) {
 	restaurantIDStr := c.Param("restaurant_id")
 	restaurantID, err := strconv.ParseUint(restaurantIDStr, 10, 64)
@@ -138,7 +185,21 @@ func (m *MenuFileControllerImpl) GetMenuFileByRestaurantID(c *gin.Context) {
 	m.responseHandler.HandleSuccess(c, http.StatusOK, "Menu files fetched successfully", menuFiles)
 }
 
-// UpdateMenuFile implements MenuFileController.
+// UpdateMenuFile godoc
+//
+//	@Summary		Update a menu file
+//	@Description	update a menu file with the input payload
+//	@Tags			menu-file
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			id						path		int					true	"Menu File ID"
+//	@Param			file					form		file				true	"Menu File"
+//	@Param			restaurant_id			form		int					true	"Restaurant ID"
+//	@Success		200						{object}	dto.BaseResponse	"Menu file updated successfully"
+//	@Failure		400						{object}	dto.BaseResponse	"Invalid file ID"
+//	@Failure		400						{object}	dto.BaseResponse	"Error getting file from request"
+//	@Failure		500						{object}	dto.BaseResponse	"Error updating menu file"
+//	@Router			/api/v1/menu-file/{id}	[put]
 func (m *MenuFileControllerImpl) UpdateMenuFile(c *gin.Context) {
 	fileIDStr := c.Param("id")
 	fileID, err := strconv.ParseUint(fileIDStr, 10, 64)
