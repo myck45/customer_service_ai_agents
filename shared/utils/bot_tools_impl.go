@@ -5,8 +5,8 @@ import openai "github.com/sashabaranov/go-openai"
 type BotToolsImpl struct{}
 
 // getUserOrder implements BotTools.
-func (b *BotToolsImpl) getUserOrder() openai.FunctionDefinition {
-	return openai.FunctionDefinition{
+func (b *BotToolsImpl) getUserOrder() *openai.FunctionDefinition {
+	return &openai.FunctionDefinition{
 		Name:        "get_user_order",
 		Description: "Obtiene el pedido del usuario, es necesario que el usuario proporcione los ítems del menú solicitados, la dirección de entrega, su nombre, número de teléfono y método de pago.",
 		Parameters: map[string]interface{}{
@@ -27,7 +27,8 @@ func (b *BotToolsImpl) getUserOrder() openai.FunctionDefinition {
 								"description": "Cantidad del ítem del menú solicitada por el usuario.",
 							},
 						},
-						"required": []string{"item_name", "quantity"},
+						"required":             []string{"item_name", "quantity"},
+						"additionalProperties": false,
 					},
 				},
 				"delivery_address": map[string]interface{}{
@@ -47,14 +48,16 @@ func (b *BotToolsImpl) getUserOrder() openai.FunctionDefinition {
 					"description": "Método de pago del pedido.",
 				},
 			},
-			"required": []string{"menu_items", "delivery_address", "user_name", "phone_number", "payment_method"},
+			"required":             []string{"menu_items", "delivery_address", "user_name", "phone_number", "payment_method"},
+			"additionalProperties": false,
 		},
+		Strict: true,
 	}
 }
 
 // getMenuItemsFromImage implements BotTools.
-func (b *BotToolsImpl) getMenuItemsFromImage() openai.FunctionDefinition {
-	return openai.FunctionDefinition{
+func (b *BotToolsImpl) getMenuItemsFromImage() *openai.FunctionDefinition {
+	return &openai.FunctionDefinition{
 		Name:        "extract_menu_items",
 		Description: "Extrae los ítems del menú de una imagen de un menú.",
 		Parameters: map[string]interface{}{
@@ -80,11 +83,14 @@ func (b *BotToolsImpl) getMenuItemsFromImage() openai.FunctionDefinition {
 							}, // price - type number
 						},
 					}, // item del menu - type object
-					"required": []string{"item_name", "description", "price"},
+					"required":             []string{"item_name", "description", "price"},
+					"additionalProperties": false,
 				}, // array de items del menu - type array
 			},
-			"required": []string{"items"},
+			"required":             []string{"items"},
+			"additionalProperties": false,
 		}, // parametros - type object
+		Strict: true,
 	}
 }
 
