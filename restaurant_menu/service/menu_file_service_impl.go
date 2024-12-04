@@ -7,12 +7,14 @@ import (
 	"github.com/proyectos01-a/restaurantMenu/dto/res"
 	"github.com/proyectos01-a/shared/data"
 	"github.com/proyectos01-a/shared/models"
+	"github.com/proyectos01-a/shared/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type MenuFileServiceImpl struct {
 	menuFileRepo data.MenuFileRepository
 	s3Repo       data.S3FileRepository
+	botUtils     utils.BotUtils
 }
 
 // GetMenuFilesURLByRestaurantID implements MenuFileService.
@@ -45,6 +47,19 @@ func (m *MenuFileServiceImpl) CreateMenuFile(fileReq *req.CreateMenuFileReq, fil
 	if fileReq == nil {
 		logrus.Error("[MenuFileServiceImpl] fileReq is nil")
 		return nil, fmt.Errorf("invalid request")
+	}
+
+	// OCR analysis
+	jsonData, err := m.botUtils.AnalyzeImage(fileBytes, fileReq.RestaurantID)
+	if err != nil {
+		logrus.WithError(err).Error("[MenuFileServiceImpl] failed to analyze image")
+		return nil, fmt.Errorf("failed to analyze image: %v", err)
+	}
+
+	// Save menu items in database
+	if err := m.botUtils.HandleGetMenuItemsFromImage(jsonData, fileReq.RestaurantID); err != nil {
+		logrus.WithError(err).Error("[MenuFileServiceImpl] failed to handle GetMenuItemsFromImage")
+		return nil, fmt.Errorf("failed to handle GetMenuItemsFromImage: %v", err)
 	}
 
 	// Upload file to S3
@@ -208,9 +223,10 @@ func (m *MenuFileServiceImpl) UpdateMenuFile(fileID uint, fileReq *req.CreateMen
 	}, nil
 }
 
-func NewMenuFileService(menuFileRepo data.MenuFileRepository, s3Repo data.S3FileRepository) MenuFileService {
+func NewMenuFileService(menuFileRepo data.MenuFileRepository, s3Repo data.S3FileRepository, botUtils utils.BotUtils) MenuFileService {
 	return &MenuFileServiceImpl{
 		menuFileRepo: menuFileRepo,
 		s3Repo:       s3Repo,
+		botUtils:     botUtils,
 	}
 }

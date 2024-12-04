@@ -22,18 +22,30 @@ type BotUtilsImpl struct {
 }
 
 // HandleGetUserOrder implements BotUtils.
-func (b *BotUtilsImpl) HandleGetUserOrder(data string, restaurantID uint) (string, error) {
+func (b *BotUtilsImpl) HandleGetUserOrder(data string, restaurantID uint) error {
 	panic("unimplemented")
 }
 
+// BotToolsHandler implements BotUtils.
+func (b *BotUtilsImpl) BotToolsHandler(functionName string, data string, restaurantID uint) error {
+	switch functionName {
+	case "get_user_order":
+		return b.HandleGetUserOrder(data, restaurantID)
+	case "get_menu_items_from_image":
+		return b.HandleGetMenuItemsFromImage(data, restaurantID)
+	default:
+		return errors.New("function not found")
+	}
+}
+
 // HandleGetMenuItemsFromImage implements BotUtils.
-func (b *BotUtilsImpl) HandleGetMenuItemsFromImage(data string, restaurantID uint) (string, error) {
+func (b *BotUtilsImpl) HandleGetMenuItemsFromImage(data string, restaurantID uint) error {
 
 	// Parse the data into a slice of ExtractedMenuItemResponse
 	var extractedItems []res.ExtractedMenuItemResponse
 	if err := json.Unmarshal([]byte(data), &extractedItems); err != nil {
 		logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to unmarshal data")
-		return "", err
+		return fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
 	// Iterate over the extracted items and create a menu for each
@@ -42,12 +54,12 @@ func (b *BotUtilsImpl) HandleGetMenuItemsFromImage(data string, restaurantID uin
 		itemStr, err := json.Marshal(item)
 		if err != nil {
 			logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to marshal item")
-			return "", err
+			return fmt.Errorf("failed to marshal item: %v", err)
 		}
 		embedding, err := b.GenerateEmbedding(string(itemStr))
 		if err != nil {
 			logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to generate embedding")
-			return "", err
+			return fmt.Errorf("failed to generate embedding: %v", err)
 		}
 
 		// Create a new menu by each item
@@ -61,23 +73,11 @@ func (b *BotUtilsImpl) HandleGetMenuItemsFromImage(data string, restaurantID uin
 		}
 		if err := b.menuRepo.CreateMenu(menu); err != nil {
 			logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to create menu")
-			return "", err
+			return fmt.Errorf("failed to create menu: %v", err)
 		}
 	}
 
-	return "success", nil
-}
-
-// BotToolsHandler implements BotUtils.
-func (b *BotUtilsImpl) BotToolsHandler(functionName string, data string, restaurantID uint) (string, error) {
-	switch functionName {
-	case "get_user_order":
-		return "get_user_order", nil
-	case "extract_menu_items":
-		return b.HandleGetMenuItemsFromImage(data, restaurantID)
-	default:
-		return "", errors.New("function not found")
-	}
+	return nil
 }
 
 // GenerateEmbedding implements BotUtils.
@@ -116,26 +116,26 @@ func (b *BotUtilsImpl) AnalyzeImage(fileBytes []byte, restaurantID uint) (string
 		Model: openai.GPT4o,
 		Tools: []openai.Tool{
 			{
-				Type:     "function",
+				Type:     openai.ToolTypeFunction,
 				Function: b.botTools.getMenuItemsFromImage(),
 			},
 		},
 		ToolChoice: openai.ToolChoice{
-			Type: "function",
+			Type: openai.ToolTypeFunction,
 			Function: openai.ToolFunction{
-				Name: "extract_menu_items",
+				Name: "get_menu_items_from_image",
 			},
 		},
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role:    "system",
+				Role:    openai.ChatMessageRoleSystem,
 				Content: "Extract the menu items from the image",
 			},
 			{
-				Role: "user",
+				Role: openai.ChatMessageRoleUser,
 				MultiContent: []openai.ChatMessagePart{
 					{
-						Type: "image_utl",
+						Type: openai.ChatMessagePartTypeImageURL,
 						ImageURL: &openai.ChatMessageImageURL{
 							URL: fmt.Sprintf("data:image/jpeg;base64,%s", imageBase64),
 						},
@@ -151,7 +151,7 @@ func (b *BotUtilsImpl) AnalyzeImage(fileBytes []byte, restaurantID uint) (string
 		return "", err
 	}
 
-	if resp.Choices[1].FinishReason != openai.FinishReasonToolCalls {
+	if resp.Choices[0].FinishReason != openai.FinishReasonToolCalls {
 		logrus.Error("[AnalyzeImage] tool call did not finish")
 		return "", errors.New("tool call did not finish")
 	}

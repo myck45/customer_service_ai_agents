@@ -40,9 +40,6 @@ func init() {
 	// Instance Twilio Utils
 	twilioUtils := utils.NewTwilioUtilsImpl(twilioClient)
 
-	// Instance Bot Utils
-	botUtils := utils.NewBotUtilsImpl(openaiClient)
-
 	// Instance Bot repository
 	botRepo := data.NewBotRepositoryImpl(db)
 
@@ -54,6 +51,12 @@ func init() {
 
 	// Instance Bot CRUD Service
 	botCRUDService := service.NewBotCRUDServiceImpl(botRepo)
+
+	// Instance Bot Tools
+	botTools := utils.NewBotTools()
+
+	// Instance Bot Utils
+	botUtils := utils.NewBotUtilsImpl(openaiClient, menuRepo, botTools)
 
 	// Instance Bot Service
 	botService := service.NewBotServiceImpl(openaiClient, twilioUtils, botUtils, chatHistoryRepo, botRepo, menuRepo)

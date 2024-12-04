@@ -38,9 +38,6 @@ func init() {
 	// Instance openai client
 	openaiClient := providers.NewOpenAIClient()
 
-	// Instance Bot Utils
-	botUtils := utils.NewBotUtilsImpl(openaiClient)
-
 	// Instance repository
 	restaurantRepo := data.NewRestaurantRepositoryImpl(db)
 
@@ -58,6 +55,12 @@ func init() {
 
 	// Instance Restaurant Service
 	restaurantService := service.NewRestaurantServiceImpl(restaurantRepo)
+
+	// Instance Bot Tools
+	botTools := utils.NewBotTools()
+
+	// Instance Bot Utils
+	botUtils := utils.NewBotUtilsImpl(openaiClient, menuRepo, botTools)
 
 	// Instance Menu Service
 	menuService := service.NewMenuServiceImpl(menuRepo, botUtils)
