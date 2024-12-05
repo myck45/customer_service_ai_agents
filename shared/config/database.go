@@ -42,8 +42,8 @@ func DatabaseConnection() *gorm.DB {
 		&models.Restaurant{},
 		&models.Bot{},
 		&models.Menu{},
-		&models.MenuFile{},
 		&models.ChatHistory{},
+		&models.MenuFile{},
 		&models.UserOrder{},
 		&models.OrderMenuItem{},
 	)
