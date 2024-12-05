@@ -22,7 +22,7 @@ func DatabaseConnection() *gorm.DB {
 		host, port, user, password, dbname)
 
 	gormConfig := &gorm.Config{
-		PrepareStmt: false,
+		PrepareStmt: true,
 	}
 
 	db, err := gorm.Open(postgres.Open(sqlInfo), gormConfig)
