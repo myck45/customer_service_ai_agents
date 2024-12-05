@@ -18,5 +18,5 @@ type UserOrder struct {
 	Status          string          `gorm:"type:varchar(20);not null"`
 	RestaurantID    uint            `gorm:"not null;index"`
 	Restaurant      Restaurant      `gorm:"foreignKey:RestaurantID"`
-	MenuItems       []OrderMenuItem `gorm:"foreignKey:OrderID"`
+	OrderMenuItems  []OrderMenuItem `gorm:"foreignKey:UserOrderID"`
 }

@@ -75,7 +75,7 @@ func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatI
 
 	// Create a new user order
 	order := &models.UserOrder{
-		MenuItems:       make([]models.OrderMenuItem, 0),
+		OrderMenuItems:  make([]models.OrderMenuItem, 0),
 		OrderCode:       uuid.New(),
 		DeliveryAddress: orderRequest.DeliveryAddress,
 		UserName:        orderRequest.UserName,
@@ -97,7 +97,7 @@ func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatI
 			Subtotal: item.Price * item.Quantity,
 		}
 		order.TotalPrice += item.Price * item.Quantity
-		order.MenuItems = append(order.MenuItems, orderItem)
+		order.OrderMenuItems = append(order.OrderMenuItems, orderItem)
 	}
 
 	// Save the user order
