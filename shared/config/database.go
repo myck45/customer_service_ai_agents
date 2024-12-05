@@ -44,14 +44,14 @@ func DatabaseConnection() *gorm.DB {
 	}
 
 	err = db.AutoMigrate(
-		&models.Bot{},
-		&models.ChatHistory{},
-		&models.MenuFile{},
-		&models.Menu{},
-		&models.OrderMenuItem{},
-		&models.Restaurant{},
-		&models.UserOrder{},
 		&models.User{},
+		&models.Restaurant{},
+		&models.Bot{},
+		&models.Menu{},
+		&models.MenuFile{},
+		&models.ChatHistory{},
+		&models.UserOrder{},
+		&models.OrderMenuItem{},
 	)
 
 	if err != nil {
