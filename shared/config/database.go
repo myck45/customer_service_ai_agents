@@ -37,12 +37,6 @@ func DatabaseConnection() *gorm.DB {
 		panic("Failed to enable vector extension")
 	}
 
-	err = db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"").Error
-	if err != nil {
-		logrus.Fatalf("Error enabling uuid-ossp extension: %v", err)
-		panic("Failed to enable uuid-ossp extension")
-	}
-
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.Restaurant{},
