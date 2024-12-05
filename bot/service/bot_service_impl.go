@@ -170,13 +170,31 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 	if res.Choices[0].FinishReason == openai.FinishReasonToolCalls {
 		toolCall := res.Choices[0].Message.ToolCalls[0]
 		args := toolCall.Function.Arguments
-		orderCode, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
+		order, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
 		if err != nil {
 			logrus.WithError(err).Error("failed to handle user order")
 			return "", err
 		}
 
-		botResponse := fmt.Sprintf("Tu pedido ha sido registrado con éxito 🎉🍽️. Tu código de pedido es: %s. ¡Gracias por tu preferencia! 🙏✨", orderCode)
+		var details string
+		for _, item := range order.OrderMenuItems {
+			details += fmt.Sprintf("- %s (x%d) $%d\n", item.ItemName, item.Quantity, item.Subtotal)
+		}
+
+		botResponse := fmt.Sprintf(`
+			🎉🍽️ ¡Tu pedido ha sido registrado con éxito! 🙏✨
+
+			*Código de Pedido:* %s
+			*Detalles:*
+			%s
+			*Dirección de Entrega:* %s
+			*Método de Pago:* %s
+			*Total:* $%d
+
+			¡Gracias por su preferencia! 🛵💨
+
+			_Su pedido será procesado y enviado en breve._ 🚚🍽️
+		`, order.OrderCode, details, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice)
 
 		return botResponse, nil
 	}

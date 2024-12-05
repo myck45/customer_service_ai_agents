@@ -64,13 +64,13 @@ func (b *BotToolsHandlerImpl) HandleGetMenuItemsFromImage(data string, restauran
 }
 
 // HandleGetUserOrder implements BotToolsHandler.
-func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatInfoRequest) (string, error) {
+func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatInfoRequest) (*models.UserOrder, error) {
 
 	// Parse the data into a UserOrderRequest
 	var orderRequest req.UserOrderRequest
 	if err := json.Unmarshal([]byte(data), &orderRequest); err != nil {
 		logrus.WithError(err).Error("[HandleGetUserOrder] failed to unmarshal data")
-		return "", fmt.Errorf("failed to unmarshal data: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
 	// Create a new user order
@@ -103,10 +103,10 @@ func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatI
 	// Save the user order
 	if err := b.userOrderRepo.SaveUserOrder(order); err != nil {
 		logrus.WithError(err).Error("[HandleGetUserOrder] failed to save user order")
-		return "", fmt.Errorf("failed to save user order: %v", err)
+		return nil, fmt.Errorf("failed to save user order: %v", err)
 	}
 
-	return order.OrderCode.String(), nil
+	return order, nil
 }
 
 func NewBotToolsHandler(menuRepo data.MenuRepository, botUtils utils.BotUtils, userOrderRepo data.UserOrderRepository) BotToolsHandler {
