@@ -53,6 +53,9 @@ func init() {
 	// Instance menu file repository
 	menuFileRepo := data.NewMenuFileRepositoryImpl(db)
 
+	// Instance User Order Repository
+	userOrderRepo := data.NewUserOrderRepository(db)
+
 	// Instance Restaurant Service
 	restaurantService := service.NewRestaurantServiceImpl(restaurantRepo)
 
@@ -62,11 +65,14 @@ func init() {
 	// Instance Bot Utils
 	botUtils := utils.NewBotUtilsImpl(openaiClient, menuRepo, botTools)
 
+	// Instance Bot Tools Handler
+	botToolsHandler := handlers.NewBotToolsHandler(menuRepo, botUtils, userOrderRepo)
+
 	// Instance Menu Service
 	menuService := service.NewMenuServiceImpl(menuRepo, botUtils)
 
 	// Instance Menu File Service
-	menuFileService := service.NewMenuFileService(menuFileRepo, s3FileRepo)
+	menuFileService := service.NewMenuFileService(menuFileRepo, s3FileRepo, botUtils, botToolsHandler)
 
 	// Instance Response Handler
 	responseHandler := handlers.NewResponseHandlersImpl()

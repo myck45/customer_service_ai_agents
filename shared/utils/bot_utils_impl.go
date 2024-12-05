@@ -7,10 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pgvector/pgvector-go"
 	"github.com/proyectos01-a/shared/data"
-	"github.com/proyectos01-a/shared/dto/res"
-	"github.com/proyectos01-a/shared/models"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
 )
@@ -19,65 +16,6 @@ type BotUtilsImpl struct {
 	openai   *openai.Client
 	menuRepo data.MenuRepository
 	botTools BotTools
-}
-
-// HandleGetUserOrder implements BotUtils.
-func (b *BotUtilsImpl) HandleGetUserOrder(data string, restaurantID uint) error {
-	panic("unimplemented")
-}
-
-// BotToolsHandler implements BotUtils.
-func (b *BotUtilsImpl) BotToolsHandler(functionName string, data string, restaurantID uint) error {
-	switch functionName {
-	case "get_user_order":
-		return b.HandleGetUserOrder(data, restaurantID)
-	case "get_menu_items_from_image":
-		return b.HandleGetMenuItemsFromImage(data, restaurantID)
-	default:
-		return errors.New("function not found")
-	}
-}
-
-// HandleGetMenuItemsFromImage implements BotUtils.
-func (b *BotUtilsImpl) HandleGetMenuItemsFromImage(data string, restaurantID uint) error {
-
-	// Parse the data into a slice of ExtractedMenuItemResponse
-	var extractedItems []res.ExtractedMenuItemResponse
-	if err := json.Unmarshal([]byte(data), &extractedItems); err != nil {
-		logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to unmarshal data")
-		return fmt.Errorf("failed to unmarshal data: %v", err)
-	}
-
-	// Iterate over the extracted items and create a menu for each
-	for _, item := range extractedItems {
-		// Marshal the item into a string to generate an embedding
-		itemStr, err := json.Marshal(item)
-		if err != nil {
-			logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to marshal item")
-			return fmt.Errorf("failed to marshal item: %v", err)
-		}
-		embedding, err := b.GenerateEmbedding(string(itemStr))
-		if err != nil {
-			logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to generate embedding")
-			return fmt.Errorf("failed to generate embedding: %v", err)
-		}
-
-		// Create a new menu by each item
-		menu := &models.Menu{
-			ItemName:     item.ItemName,
-			Description:  item.Description,
-			Price:        item.Price,
-			Likes:        0,
-			Embedding:    pgvector.NewVector(embedding),
-			RestaurantID: restaurantID,
-		}
-		if err := b.menuRepo.CreateMenu(menu); err != nil {
-			logrus.WithError(err).Error("[HandleGetMenuItemsFromImage] failed to create menu")
-			return fmt.Errorf("failed to create menu: %v", err)
-		}
-	}
-
-	return nil
 }
 
 // GenerateEmbedding implements BotUtils.
@@ -117,7 +55,7 @@ func (b *BotUtilsImpl) AnalyzeImage(fileBytes []byte, restaurantID uint) (string
 		Tools: []openai.Tool{
 			{
 				Type:     openai.ToolTypeFunction,
-				Function: b.botTools.getMenuItemsFromImage(),
+				Function: b.botTools.GetMenuItemsFromImage(),
 			},
 		},
 		ToolChoice: openai.ToolChoice{

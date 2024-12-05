@@ -10,6 +10,7 @@ import (
 	"github.com/proyectos01-a/bot/dto/req"
 	"github.com/proyectos01-a/shared/data"
 	"github.com/proyectos01-a/shared/dto"
+	"github.com/proyectos01-a/shared/handlers"
 	"github.com/proyectos01-a/shared/models"
 	"github.com/proyectos01-a/shared/utils"
 	"github.com/sashabaranov/go-openai"
@@ -23,6 +24,8 @@ type BotServiceImpl struct {
 	chatHistoryRepo data.ChatHistoryRepository
 	botRepo         data.BotRepository
 	menuRepo        data.MenuRepository
+	botTools        utils.BotTools
+	botToolHandler  handlers.BotToolsHandler
 }
 
 const (
@@ -104,8 +107,14 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 		Content: userMessage,
 	})
 
+	chatInfo := dto.ChatInfoRequest{
+		BotWspNumber:    botWspNumber,
+		SenderWspNumber: userWspNumber,
+		RestaurantID:    botInfo.RestaurantID,
+	}
+
 	// Generate the bot response
-	botResponse, err := b.GenerateBotResponse(context.Background(), messages)
+	botResponse, err := b.GenerateBotResponse(context.Background(), messages, chatInfo)
 	if err != nil {
 		logrus.WithError(err).Error("failed to generate bot response")
 		if twErr := b.twilio.SendWspMessage(userWspNumber, botWspNumber, botErrResp); twErr != nil {
@@ -137,7 +146,7 @@ func (b *BotServiceImpl) BotResponse(chat *req.TwilioWebhook) error {
 }
 
 // GenerateBotResponse implements BotService.
-func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage) (string, error) {
+func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []openai.ChatCompletionMessage, chatInfo dto.ChatInfoRequest) (string, error) {
 
 	// Create the chat completion request
 	res, err := b.openAI.CreateChatCompletion(
@@ -145,6 +154,12 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 		openai.ChatCompletionRequest{
 			Model:    openai.GPT4oMini,
 			Messages: messages,
+			Tools: []openai.Tool{
+				{
+					Type:     openai.ToolTypeFunction,
+					Function: b.botTools.GetUserOrder(),
+				},
+			},
 		},
 	)
 	if err != nil {
@@ -152,7 +167,20 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 		return "", err
 	}
 
-	// Get the bot response
+	if res.Choices[0].FinishReason == openai.FinishReasonToolCalls {
+		toolCall := res.Choices[0].Message.ToolCalls[0]
+		args := toolCall.Function.Arguments
+		orderCode, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
+		if err != nil {
+			logrus.WithError(err).Error("failed to handle user order")
+			return "", err
+		}
+
+		botResponse := fmt.Sprintf("Tu pedido ha sido registrado con éxito 🎉🍽️. Tu código de pedido es: %s. ¡Gracias por tu preferencia! 🙏✨", orderCode)
+
+		return botResponse, nil
+	}
+
 	botResponse := res.Choices[0].Message.Content
 
 	return botResponse, nil
@@ -181,18 +209,18 @@ func (b *BotServiceImpl) PrepareChatMessages(chatHistory []models.ChatHistory, s
 
 	messages := []openai.ChatCompletionMessage{
 		{
-			Role:    "system",
+			Role:    openai.ChatMessageRoleSystem,
 			Content: systemPrompt,
 		},
 	}
 
 	for _, chat := range chatHistory {
 		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    "user",
+			Role:    openai.ChatMessageRoleUser,
 			Content: chat.Message,
 		})
 		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    "assistant",
+			Role:    openai.ChatMessageRoleAssistant,
 			Content: chat.BotResponse,
 		})
 	}
@@ -242,7 +270,7 @@ Ofrecer una experiencia informativa y accesible para que los clientes conozcan m
 	return systemPrompt, nil
 }
 
-func NewBotServiceImpl(openAI *openai.Client, twilio utils.TwilioUtils, botUtils utils.BotUtils, chatHistoryRepo data.ChatHistoryRepository, botRepo data.BotRepository, menuRepo data.MenuRepository) BotService {
+func NewBotServiceImpl(openAI *openai.Client, twilio utils.TwilioUtils, botUtils utils.BotUtils, chatHistoryRepo data.ChatHistoryRepository, botRepo data.BotRepository, menuRepo data.MenuRepository, botTools utils.BotTools, botToolHandler handlers.BotToolsHandler) BotService {
 	return &BotServiceImpl{
 		openAI:          openAI,
 		twilio:          twilio,
@@ -250,5 +278,7 @@ func NewBotServiceImpl(openAI *openai.Client, twilio utils.TwilioUtils, botUtils
 		chatHistoryRepo: chatHistoryRepo,
 		botRepo:         botRepo,
 		menuRepo:        menuRepo,
+		botTools:        botTools,
+		botToolHandler:  botToolHandler,
 	}
 }

@@ -8,6 +8,7 @@ type Restaurant struct {
 	Menu        []Menu        `gorm:"foreignKey:RestaurantID"`
 	ChatHistory []ChatHistory `gorm:"foreignKey:RestaurantID"`
 	Bot         []Bot         `gorm:"foreignKey:RestaurantID"`
+	UserOrder   []UserOrder   `gorm:"foreignKey:RestaurantID"`
 	UserID      uint          `gorm:"not null;index"`
 	User        User          `gorm:"foreignKey:UserID"`
 }

@@ -49,6 +49,9 @@ func init() {
 	// Instance Menu repository
 	menuRepo := data.NewMenuRepositoryImpl(db, supabaseDB)
 
+	// Instance User Order repository
+	userOrderRepo := data.NewUserOrderRepository(db)
+
 	// Instance Bot CRUD Service
 	botCRUDService := service.NewBotCRUDServiceImpl(botRepo)
 
@@ -58,8 +61,11 @@ func init() {
 	// Instance Bot Utils
 	botUtils := utils.NewBotUtilsImpl(openaiClient, menuRepo, botTools)
 
+	// Instance Bot Tools Handler
+	botToolHandler := handlers.NewBotToolsHandler(menuRepo, botUtils, userOrderRepo)
+
 	// Instance Bot Service
-	botService := service.NewBotServiceImpl(openaiClient, twilioUtils, botUtils, chatHistoryRepo, botRepo, menuRepo)
+	botService := service.NewBotServiceImpl(openaiClient, twilioUtils, botUtils, chatHistoryRepo, botRepo, menuRepo, botTools, botToolHandler)
 
 	// Instance Response Handler
 	responseHandler := handlers.NewResponseHandlersImpl()

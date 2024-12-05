@@ -10,7 +10,7 @@ import (
 type BotToolsImpl struct{}
 
 // getUserOrder implements BotTools.
-func (b *BotToolsImpl) getUserOrder() *openai.FunctionDefinition {
+func (b *BotToolsImpl) GetUserOrder() *openai.FunctionDefinition {
 	schema, err := jsonschema.GenerateSchemaForType(schemas.UserOrderFunctionSchema{})
 	if err != nil {
 		logrus.WithError(err).Error("[getUserOrder] failed to generate schema")
@@ -26,7 +26,7 @@ func (b *BotToolsImpl) getUserOrder() *openai.FunctionDefinition {
 }
 
 // getMenuItemsFromImage implements BotTools.
-func (b *BotToolsImpl) getMenuItemsFromImage() *openai.FunctionDefinition {
+func (b *BotToolsImpl) GetMenuItemsFromImage() *openai.FunctionDefinition {
 	schema, err := jsonschema.GenerateSchemaForType(schemas.MenuItemsFromImageFunctionSchema{})
 	if err != nil {
 		logrus.WithError(err).Error("[getMenuItemsFromImage] failed to generate schema")
