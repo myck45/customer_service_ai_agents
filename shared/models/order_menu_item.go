@@ -9,5 +9,5 @@ type OrderMenuItem struct {
 	Price       int       `gorm:"not null"`
 	Subtotal    int       `gorm:"not null"`
 	UserOrderID uint      `gorm:"not null;index"`
-	UserOrder   UserOrder `gorm:"foreignKey:OrderID"`
+	UserOrder   UserOrder `gorm:"foreignKey:UserOrderID"`
 }
