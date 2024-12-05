@@ -182,18 +182,18 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 		}
 
 		botResponse := fmt.Sprintf(`
-			🎉🍽️ ¡Tu pedido ha sido registrado con éxito! 🙏✨
+		🎉¡Tu pedido ha sido registrado con éxito!✨
 
-			*Código de Pedido:* %s
-			*Detalles:*
-			%s
-			*Dirección de Entrega:* %s
-			*Método de Pago:* %s
-			*Total:* $%d
+		*Código de Pedido:* %s
+		*Detalles:*
+		%s
+		*Dirección de Entrega:* %s
+		*Método de Pago:* %s
+		*Total:* $%d
 
-			¡Gracias por su preferencia! 🛵💨
+		¡Gracias por su preferencia! 🛵💨
 
-			_Su pedido será procesado y enviado en breve._ 🚚🍽️
+		_Su pedido será procesado y enviado en breve._ 🚚🍽️
 		`, order.OrderCode, details, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice)
 
 		return botResponse, nil
@@ -243,6 +243,8 @@ func (b *BotServiceImpl) PrepareChatMessages(chatHistory []models.ChatHistory, s
 		})
 	}
 
+	logrus.Infof("messages: %+v", messages)
+
 	return messages, nil
 }
 
@@ -254,11 +256,10 @@ func (b *BotServiceImpl) SystemPrompt(botConfig req.BotConfig) (string, error) {
 	botIdentity := botConfig.BotIdentity
 
 	systemPrompt := fmt.Sprintf(`
-**Identidad**
-- **Nombre** tu nombre es %s
-- **Identidad** %s 
-		
-		
+# **Identidad**
+- **Nombre**: tu nombre es %s
+- **Identidad**: %s 
+
 Proporcionas información detallada sobre el menú, platos, y datos clave del restaurante usando un sistema de búsqueda semántica que enriquece las respuestas con contexto relevante.
 
 **Capacidades y Comportamiento:**
@@ -269,9 +270,9 @@ Proporcionas información detallada sobre el menú, platos, y datos clave del re
 - Tu personalidad es amigable y servicial, siempre buscas ayudar a los clientes.
 - Eres persuasivo y promueves la calidad de los platillos y la experiencia en el restaurante.
 
-**Uso de Búsqueda Semántica:**
-- **Contexto Actual:** %s
-- **Fecha:** %s
+**Contexto actual:**
+- **Menú Disponible:** %s
+- **Fecha Actual:** %s
 - Seleccionas platillos según similitud sin mencionar "contexto" o "grado de similitud". Si la consulta no requiere contexto, respondes de forma directa.
 - Utiliza el contexto para enriquecer tus respuestas, pero no lo menciones explícitamente.
 - El contexto son los platillos disponibles en el menú. **Solo puedes ofrecer al cliente los platillos disponibles en el menú.**
@@ -281,9 +282,15 @@ Proporcionas información detallada sobre el menú, platos, y datos clave del re
 2. Redirige temas fuera del restaurante hacia temas relevantes.
 3. Tus respuestas son enviadas por WhatsApp, por lo que debes adaptar el formato de tus respuestas a mensajes que puedan ser presentados en esa plataforma.
 4. Tienes estrictamente prohibido ofrecer información que no esté relacionada con el restaurante o el menú.
+5. **Solo puedes ofrecer platillos que están en el menú actual. No inventes platillos.**
 
-**Debes si o si seguir estas directrices para garantizar una experiencia de usuario óptima, de lo contrario seras despedido.**
-	`, botName, botIdentity, additionalData, time.Now().Format("2006-01-02"))
+**Ejemplos de Respuestas:**
+- Si un cliente pregunta por un platillo específico, responde con los detalles de ese platillo si está en el menú.
+- Si un cliente pregunta por recomendaciones, sugiere platillos del menú actual.
+- Si un cliente pregunta por el menú disponible, habla solo de los platillos presentes en el contexto actual.
+
+**Debes seguir estas directrices para garantizar una experiencia de usuario óptima, de lo contrario serás despedido.**
+    `, botName, botIdentity, additionalData, time.Now().Format("2006-01-02"))
 
 	return systemPrompt, nil
 }
