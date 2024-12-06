@@ -19,7 +19,7 @@ func (b *BotToolsImpl) GetUserOrder() *openai.FunctionDefinition {
 
 	return &openai.FunctionDefinition{
 		Name:        "get_user_order",
-		Description: "Obtiene el pedido del usuario, es necesario que el usuario proporcione los ítems del menú solicitados, la dirección de entrega, su nombre, número de teléfono y método de pago.",
+		Description: "Obtiene el pedido del usuario, es necesario que el usuario proporcione los ítems del menú solicitados, la dirección de entrega, su nombre, número de teléfono y método de pago, el método de pago solo puede ser efectivo o transferencia.",
 		Parameters:  schema,
 		Strict:      true,
 	}

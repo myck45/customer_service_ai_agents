@@ -11,5 +11,5 @@ type UserOrderFunctionSchema struct {
 	DeliveryAddress string           `json:"delivery_address" description:"Dirección de entrega del pedido" required:"true"`
 	UserName        string           `json:"user_name" description:"Nombre del usuario que realiza el pedido" required:"true"`
 	PhoneNumber     string           `json:"phone_number" description:"Número de teléfono del usuario que realiza el pedido" required:"true"`
-	PaymentMethod   string           `json:"payment_method" description:"Método de pago del pedido" required:"true" enum:"efectivo,transferencia"`
+	PaymentMethod   string           `json:"payment_method" description:"Método de pago del pedido, solo se acepta transferencia o efectivo" required:"true" enum:"efectivo,transferencia"`
 }
