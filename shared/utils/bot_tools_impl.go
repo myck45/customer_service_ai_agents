@@ -11,10 +11,58 @@ type BotToolsImpl struct{}
 
 // getUserOrder implements BotTools.
 func (b *BotToolsImpl) GetUserOrder() *openai.FunctionDefinition {
-	schema, err := jsonschema.GenerateSchemaForType(schemas.UserOrderFunctionSchema{})
-	if err != nil {
-		logrus.WithError(err).Error("[getUserOrder] failed to generate schema")
-		return nil
+	// schema, err := jsonschema.GenerateSchemaForType(schemas.UserOrderFunctionSchema{})
+	// if err != nil {
+	// 	logrus.WithError(err).Error("[getUserOrder] failed to generate schema")
+	// 	return nil
+	// }
+
+	schema := &jsonschema.Definition{
+		Type:     jsonschema.Object,
+		Required: []string{"menu_items", "delivery_address", "user_name", "phone_number", "payment_method"},
+		Properties: map[string]jsonschema.Definition{
+			"menu_items": {
+				Type: jsonschema.Array,
+				Items: &jsonschema.Definition{
+					Type: jsonschema.Object,
+					Properties: map[string]jsonschema.Definition{
+						"item_name": {
+							Type:        jsonschema.String,
+							Description: "Nombre del ítem del menú",
+						},
+						"quantity": {
+							Type:        jsonschema.Integer,
+							Description: "Cantidad del ítem del menú solicitada por el usuario",
+						},
+						"price": {
+							Type:        jsonschema.Number,
+							Description: "Precio del ítem del menú",
+						},
+					},
+					Required:             []string{"item_name", "quantity", "price"},
+					AdditionalProperties: false,
+				},
+				Description: "Lista de ítems del menú solicitados por el usuario",
+			},
+			"delivery_address": {
+				Type:        jsonschema.String,
+				Description: "Dirección de entrega del pedido",
+			},
+			"user_name": {
+				Type:        jsonschema.String,
+				Description: "Nombre del usuario que realiza el pedido",
+			},
+			"phone_number": {
+				Type:        jsonschema.String,
+				Description: "Número de teléfono del usuario que realiza el pedido",
+			},
+			"payment_method": {
+				Type:        jsonschema.String,
+				Description: "Método de pago del pedido",
+				Enum:        []string{"efectivo", "transferencia"},
+			},
+		},
+		AdditionalProperties: false,
 	}
 
 	return &openai.FunctionDefinition{
