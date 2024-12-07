@@ -188,17 +188,18 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 			}
 
 			botResponse := fmt.Sprintf(
-				"🛒 *Pedido Realizado* 🛒\n\n"+
+				"🍔🍟 *Pedido Realizado* 🍟🍔\n\n"+
 					"*Detalles del Pedido:*\n\n"+
 					"%s"+
+					"\n"+
 					"*Código único de tu pedido:*\n\n"+
 					"%s\n\n"+
 					"_este código es importante para rastrear tu pedido, cancelarlo o agregar más items._\n\n"+
 					"*Dirección de Entrega*: %s\n"+
 					"*Método de Pago*: %s\n"+
 					"*Total*: $%d\n\n"+
-					"🚚 ¡Tu pedido está en camino! 🚚"+
-					"📦 ¡Gracias por tu compra! 📦",
+					"🛵 ¡Tu pedido está en camino! 🛵\n"+
+					"🍽️ ¡Gracias por tu compra! 🍽️",
 				details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
 			)
 
@@ -215,7 +216,7 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 			botResponse := fmt.Sprintf(
 				"🚫 ¡Tu pedido ha sido cancelado! 🚫\n\n"+
 					"*El pedido con Código: %s a sido cancelado*\n\n"+
-					"📦 ¡Gracias por tu preferencia! 📦",
+					"🍟 ¡Gracias por tu preferencia! 🍟",
 				orderCode,
 			)
 
