@@ -89,6 +89,22 @@ func (b *BotToolsImpl) GetMenuItemsFromImage() *openai.FunctionDefinition {
 	}
 }
 
+// DeleteUserOrder implements BotTools.
+func (b *BotToolsImpl) DeleteUserOrder() *openai.FunctionDefinition {
+	schema, err := jsonschema.GenerateSchemaForType(schemas.DeleteUserOrderFunctionSchema{})
+	if err != nil {
+		logrus.WithError(err).Error("[deleteUserOrder] failed to generate schema")
+		return nil
+	}
+
+	return &openai.FunctionDefinition{
+		Name:        "delete_user_order",
+		Description: "Elimina el pedido del usuario, es necesario que el usuario proporcione el código del pedido a eliminar.",
+		Parameters:  schema,
+		Strict:      true,
+	}
+}
+
 func NewBotTools() BotTools {
 	return &BotToolsImpl{}
 }

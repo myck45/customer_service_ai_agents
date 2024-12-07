@@ -22,6 +22,24 @@ type BotToolsHandlerImpl struct {
 	botUtils      utils.BotUtils
 }
 
+// HandleDeleteUserOrder implements BotToolsHandler.
+func (b *BotToolsHandlerImpl) HandleDeleteUserOrder(data string, chatInfo dto.ChatInfoRequest) (string, error) {
+	// Parse the data into a DeleteUserOrderRequest
+	var orderRequest req.DeleteUserOrderRequest
+	if err := json.Unmarshal([]byte(data), &orderRequest); err != nil {
+		logrus.WithError(err).Error("[HandleDeleteUserOrder] failed to unmarshal data")
+		return "", fmt.Errorf("failed to unmarshal data: %v", err)
+	}
+
+	// Delete the user order
+	if err := b.userOrderRepo.DeleteUserOrder(orderRequest.OrderCode); err != nil {
+		logrus.WithError(err).Error("[HandleDeleteUserOrder] failed to delete user order")
+		return "", fmt.Errorf("failed to delete user order: %v", err)
+	}
+
+	return orderRequest.OrderCode, nil
+}
+
 // HandleGetMenuItemsFromImage implements BotToolsHandler.
 func (b *BotToolsHandlerImpl) HandleGetMenuItemsFromImage(data string, restaurantID uint) error {
 	// Parse the data into a slice of ExtractedMenuItemResponse

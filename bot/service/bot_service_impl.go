@@ -159,6 +159,10 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 					Type:     openai.ToolTypeFunction,
 					Function: b.botTools.GetUserOrder(),
 				},
+				{
+					Type:     openai.ToolTypeFunction,
+					Function: b.botTools.DeleteUserOrder(),
+				},
 			},
 		},
 	)
@@ -170,33 +174,51 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 	if res.Choices[0].FinishReason == openai.FinishReasonToolCalls {
 		toolCall := res.Choices[0].Message.ToolCalls[0]
 		args := toolCall.Function.Arguments
-		order, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
-		if err != nil {
-			logrus.WithError(err).Error("failed to handle user order")
-			return "", err
+
+		if toolCall.Function.Name == "get_user_order" {
+			order, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
+			if err != nil {
+				logrus.WithError(err).Error("failed to handle user order")
+				return "", err
+			}
+
+			var details string
+			for _, item := range order.OrderMenuItems {
+				details += fmt.Sprintf("- %s (x%d) $%d\n", item.ItemName, item.Quantity, item.Subtotal)
+			}
+
+			botResponse := fmt.Sprintf(
+				"🛒 **Pedido Realizado** 🛒\n\n"+
+					"**Detalles del Pedido**\n"+
+					"%s\n"+
+					"**Código único de tu pedido\n"+
+					"%s\n"+
+					"**Dirección de Entrega**: %s\n"+
+					"**Método de Pago**: %s\n"+
+					"**Total**: $%d\n\n"+
+					"🚚 ¡Tu pedido está en camino! 🚚",
+				details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
+			)
+
+			return botResponse, nil
 		}
 
-		var details string
-		for _, item := range order.OrderMenuItems {
-			details += fmt.Sprintf("- %s (x%d) $%d\n", item.ItemName, item.Quantity, item.Subtotal)
+		if toolCall.Function.Name == "delete_user_order" {
+			orderCode, err := b.botToolHandler.HandleDeleteUserOrder(args, chatInfo)
+			if err != nil {
+				logrus.WithError(err).Error("failed to handle delete user order")
+				return "", err
+			}
+
+			botResponse := fmt.Sprintf(
+				"🗑️ **Pedido Cancelado** 🗑️\n\n"+
+					"**El pdido con Código: %s** a sido cancelado\n"+
+					"🚫 ¡Tu pedido ha sido cancelado! 🚫",
+				orderCode,
+			)
+
+			return botResponse, nil
 		}
-
-		botResponse := fmt.Sprintf(`
-		🎉¡Tu pedido ha sido registrado con éxito!✨
-
-		*Código de Pedido:* %s
-		*Detalles:*
-		%s
-		*Dirección de Entrega:* %s
-		*Método de Pago:* %s
-		*Total:* $%d
-
-		¡Gracias por su preferencia! 🛵💨
-
-		_Su pedido será procesado y enviado en breve._ 🚚🍽️
-		`, order.OrderCode, details, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice)
-
-		return botResponse, nil
 	}
 
 	botResponse := res.Choices[0].Message.Content
