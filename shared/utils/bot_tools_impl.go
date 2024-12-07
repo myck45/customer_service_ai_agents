@@ -99,7 +99,7 @@ func (b *BotToolsImpl) DeleteUserOrder() *openai.FunctionDefinition {
 
 	schema := &jsonschema.Definition{
 		Type:     jsonschema.Object,
-		Required: []string{"order_code", "user_confirm"},
+		Required: []string{"order_code", "user_confirmation"},
 		Properties: map[string]jsonschema.Definition{
 			"order_code": {
 				Type:        jsonschema.String,
