@@ -4,10 +4,25 @@ import (
 	"errors"
 	"time"
 
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/sirupsen/logrus"
 )
 
 type UtilsImpl struct{}
+
+// GenerateNanoID implements Utils.
+func (u *UtilsImpl) GenerateNanoID() (string, error) {
+	const length = 8
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	id, err := gonanoid.Generate(charset, length)
+	if err != nil {
+		logrus.WithError(err).Error("*** [UtilsImpl] Error generating nanoid")
+		return "", errors.New("error generating nanoid")
+	}
+
+	return id, nil
+}
 
 // ParseDateTimeToString implements Utils.
 func (u *UtilsImpl) ParseDateTimeToString(date time.Time) (*string, error) {

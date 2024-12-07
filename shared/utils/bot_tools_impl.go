@@ -91,15 +91,32 @@ func (b *BotToolsImpl) GetMenuItemsFromImage() *openai.FunctionDefinition {
 
 // DeleteUserOrder implements BotTools.
 func (b *BotToolsImpl) DeleteUserOrder() *openai.FunctionDefinition {
-	schema, err := jsonschema.GenerateSchemaForType(schemas.DeleteUserOrderFunctionSchema{})
-	if err != nil {
-		logrus.WithError(err).Error("[deleteUserOrder] failed to generate schema")
-		return nil
+	// schema, err := jsonschema.GenerateSchemaForType(schemas.DeleteUserOrderFunctionSchema{})
+	// if err != nil {
+	// 	logrus.WithError(err).Error("[deleteUserOrder] failed to generate schema")
+	// 	return nil
+	// }
+
+	schema := &jsonschema.Definition{
+		Type:     jsonschema.Object,
+		Required: []string{"order_code", "user_confirm"},
+		Properties: map[string]jsonschema.Definition{
+			"order_code": {
+				Type:        jsonschema.String,
+				Description: "Código del pedido a eliminar",
+			},
+			"user_confirmation": {
+				Type:        jsonschema.String,
+				Description: "Confirmación del usuario para eliminar el pedido",
+				Enum:        []string{"si", "no"},
+			},
+		},
+		AdditionalProperties: false,
 	}
 
 	return &openai.FunctionDefinition{
 		Name:        "delete_user_order",
-		Description: "Elimina el pedido del usuario, es necesario que el usuario proporcione el código del pedido a eliminar.",
+		Description: "Elimina el pedido del usuario, es necesario que el usuario proporcione el código del pedido a eliminar. Debes preguntar al usuario si está seguro de eliminar el pedido con el código proporcionado.",
 		Parameters:  schema,
 		Strict:      true,
 	}

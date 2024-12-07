@@ -1,7 +1,6 @@
 package data
 
 import (
-	"github.com/google/uuid"
 	"github.com/proyectos01-a/shared/models"
 )
 
@@ -18,8 +17,11 @@ type UserOrderRepository interface {
 	// UpdateUserOrderStatus updates the status of a user order in the database.
 	UpdateUserOrderStatus(orderCode string, status string) error
 
+	// UpdateUserOrderByCode updates a user order by its code.
+	UpdateUserOrderByCode(orderCode string, order *models.UserOrder) error
+
 	// DeleteUserOrder deletes a user order from the database.
-	DeleteUserOrder(orderCode uuid.UUID) error
+	DeleteUserOrder(orderCode string) error
 
 	// GetUserOrdersByRestaurantID retrieves all user orders for a restaurant.
 	GetUserOrdersByRestaurantID(restaurantID uint) ([]models.UserOrder, error)

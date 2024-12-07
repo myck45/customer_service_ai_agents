@@ -3,7 +3,6 @@ package data
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/proyectos01-a/shared/models"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -13,8 +12,25 @@ type UserOrderRepositoryImpl struct {
 	db *gorm.DB
 }
 
+// UpdateUserOrderByCode implements UserOrderRepository.
+func (u *UserOrderRepositoryImpl) UpdateUserOrderByCode(orderCode string, order *models.UserOrder) error {
+
+	result := u.db.Model(&models.UserOrder{}).Where("order_code = ?", orderCode).Updates(order)
+	if result.Error != nil {
+		logrus.WithError(result.Error).Error("*** [UpdateUserOrderByCode] Error updating user order")
+		return fmt.Errorf("error updating user order with code %s", orderCode)
+	}
+
+	if result.RowsAffected == 0 {
+		logrus.WithField("code", orderCode).Warn("*** [UpdateUserOrderByCode] User order not found")
+		return fmt.Errorf("user order with code %s not found", orderCode)
+	}
+
+	return nil
+}
+
 // DeleteUserOrder implements UserOrderRepository.
-func (u *UserOrderRepositoryImpl) DeleteUserOrder(orderCode uuid.UUID) error {
+func (u *UserOrderRepositoryImpl) DeleteUserOrder(orderCode string) error {
 	result := u.db.Where("order_code = ?", orderCode).Delete(&models.UserOrder{})
 	if result.Error != nil {
 		logrus.WithError(result.Error).Error("*** [DeleteUserOrder] Error deleting user order")

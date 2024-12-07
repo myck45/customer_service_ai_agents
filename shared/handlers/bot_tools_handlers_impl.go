@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/pgvector/pgvector-go"
 	"github.com/proyectos01-a/shared/constants"
 	"github.com/proyectos01-a/shared/data"
@@ -20,6 +19,7 @@ type BotToolsHandlerImpl struct {
 	menuRepo      data.MenuRepository
 	userOrderRepo data.UserOrderRepository
 	botUtils      utils.BotUtils
+	utils         utils.Utils
 }
 
 // HandleDeleteUserOrder implements BotToolsHandler.
@@ -31,11 +31,7 @@ func (b *BotToolsHandlerImpl) HandleDeleteUserOrder(data string, chatInfo dto.Ch
 		return "", fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
-	oderCode, err := uuid.Parse(orderRequest.OrderCode)
-	if err != nil {
-		logrus.WithError(err).Error("[HandleDeleteUserOrder] failed to parse order code")
-		return "", fmt.Errorf("failed to parse order code: %v", err)
-	}
+	oderCode := orderRequest.OrderCode
 
 	// Delete the user order
 	if err := b.userOrderRepo.DeleteUserOrder(oderCode); err != nil {
@@ -97,10 +93,16 @@ func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatI
 		return nil, fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
+	orderCode, err := b.utils.GenerateNanoID()
+	if err != nil {
+		logrus.WithError(err).Error("[HandleGetUserOrder] failed to generate nanoid")
+		return nil, fmt.Errorf("failed to generate nanoid: %v", err)
+	}
+
 	// Create a new user order
 	order := &models.UserOrder{
 		OrderMenuItems:  make([]models.OrderMenuItem, 0),
-		OrderCode:       uuid.New(),
+		OrderCode:       orderCode,
 		DeliveryAddress: orderRequest.DeliveryAddress,
 		UserName:        orderRequest.UserName,
 		PhoneNumber:     orderRequest.PhoneNumber,
@@ -133,10 +135,11 @@ func (b *BotToolsHandlerImpl) HandleGetUserOrder(data string, chatInfo dto.ChatI
 	return order, nil
 }
 
-func NewBotToolsHandler(menuRepo data.MenuRepository, botUtils utils.BotUtils, userOrderRepo data.UserOrderRepository) BotToolsHandler {
+func NewBotToolsHandler(menuRepo data.MenuRepository, botUtils utils.BotUtils, userOrderRepo data.UserOrderRepository, utils utils.Utils) BotToolsHandler {
 	return &BotToolsHandlerImpl{
 		menuRepo:      menuRepo,
 		botUtils:      botUtils,
 		userOrderRepo: userOrderRepo,
+		utils:         utils,
 	}
 }

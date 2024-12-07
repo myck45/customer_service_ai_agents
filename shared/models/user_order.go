@@ -1,13 +1,12 @@
 package models
 
 import (
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserOrder struct {
 	gorm.Model
-	OrderCode       uuid.UUID       `gorm:"type:uuid;not null;unique"`
+	OrderCode       string          `gorm:"type:varchar(255);not null;unique"`
 	DeliveryAddress string          `gorm:"type:varchar(255);not null"`
 	UserName        string          `gorm:"type:varchar(100);not null"`
 	PhoneNumber     string          `gorm:"type:varchar(30);not null"`

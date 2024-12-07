@@ -65,8 +65,11 @@ func init() {
 	// Instance Bot Utils
 	botUtils := utils.NewBotUtilsImpl(openaiClient, menuRepo, botTools)
 
+	// Instance utils
+	utils := utils.NewUtilsImpl()
+
 	// Instance Bot Tools Handler
-	botToolsHandler := handlers.NewBotToolsHandler(menuRepo, botUtils, userOrderRepo)
+	botToolsHandler := handlers.NewBotToolsHandler(menuRepo, botUtils, userOrderRepo, utils)
 
 	// Instance Menu Service
 	menuService := service.NewMenuServiceImpl(menuRepo, botUtils)

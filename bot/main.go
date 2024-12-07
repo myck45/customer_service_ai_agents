@@ -61,8 +61,11 @@ func init() {
 	// Instance Bot Utils
 	botUtils := utils.NewBotUtilsImpl(openaiClient, menuRepo, botTools)
 
+	// Instance utils
+	utils := utils.NewUtilsImpl()
+
 	// Instance Bot Tools Handler
-	botToolHandler := handlers.NewBotToolsHandler(menuRepo, botUtils, userOrderRepo)
+	botToolHandler := handlers.NewBotToolsHandler(menuRepo, botUtils, userOrderRepo, utils)
 
 	// Instance Bot Service
 	botService := service.NewBotServiceImpl(openaiClient, twilioUtils, botUtils, chatHistoryRepo, botRepo, menuRepo, botTools, botToolHandler)
