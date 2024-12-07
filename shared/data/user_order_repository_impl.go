@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/proyectos01-a/shared/models"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -13,8 +14,8 @@ type UserOrderRepositoryImpl struct {
 }
 
 // DeleteUserOrder implements UserOrderRepository.
-func (u *UserOrderRepositoryImpl) DeleteUserOrder(orderCode string) error {
-	result := u.db.Delete(&models.UserOrder{}, orderCode)
+func (u *UserOrderRepositoryImpl) DeleteUserOrder(orderCode uuid.UUID) error {
+	result := u.db.Where("order_code = ?", orderCode).Delete(&models.UserOrder{})
 	if result.Error != nil {
 		logrus.WithError(result.Error).Error("*** [DeleteUserOrder] Error deleting user order")
 		return fmt.Errorf("error deleting user order with code %s", orderCode)

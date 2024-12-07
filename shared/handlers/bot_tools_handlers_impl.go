@@ -31,8 +31,14 @@ func (b *BotToolsHandlerImpl) HandleDeleteUserOrder(data string, chatInfo dto.Ch
 		return "", fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
+	oderCode, err := uuid.Parse(orderRequest.OrderCode)
+	if err != nil {
+		logrus.WithError(err).Error("[HandleDeleteUserOrder] failed to parse order code")
+		return "", fmt.Errorf("failed to parse order code: %v", err)
+	}
+
 	// Delete the user order
-	if err := b.userOrderRepo.DeleteUserOrder(orderRequest.OrderCode); err != nil {
+	if err := b.userOrderRepo.DeleteUserOrder(oderCode); err != nil {
 		logrus.WithError(err).Error("[HandleDeleteUserOrder] failed to delete user order")
 		return "", fmt.Errorf("failed to delete user order: %v", err)
 	}
