@@ -188,15 +188,17 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 			}
 
 			botResponse := fmt.Sprintf(
-				"🛒 **Pedido Realizado** 🛒\n\n"+
-					"**Detalles del Pedido**\n"+
-					"%s\n"+
-					"**Código único de tu pedido\n"+
-					"%s\n"+
-					"**Dirección de Entrega**: %s\n"+
-					"**Método de Pago**: %s\n"+
-					"**Total**: $%d\n\n"+
-					"🚚 ¡Tu pedido está en camino! 🚚",
+				"🛒 *Pedido Realizado* 🛒\n\n"+
+					"*Detalles del Pedido:*\n\n"+
+					"%s"+
+					"*Código único de tu pedido:*\n\n"+
+					"%s\n\n"+
+					"_este código es importante para rastrear tu pedido, cancelarlo o agregar más items._\n\n"+
+					"*Dirección de Entrega*: %s\n"+
+					"*Método de Pago*: %s\n"+
+					"*Total*: $%d\n\n"+
+					"🚚 ¡Tu pedido está en camino! 🚚"+
+					"📦 ¡Gracias por tu compra! 📦",
 				details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
 			)
 
@@ -211,9 +213,9 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 			}
 
 			botResponse := fmt.Sprintf(
-				"🗑️ **Pedido Cancelado** 🗑️\n\n"+
-					"**El pdido con Código: %s** a sido cancelado\n"+
-					"🚫 ¡Tu pedido ha sido cancelado! 🚫",
+				"🚫 ¡Tu pedido ha sido cancelado! 🚫\n\n"+
+					"*El pedido con Código: %s a sido cancelado*\n\n"+
+					"📦 ¡Gracias por tu preferencia! 📦",
 				orderCode,
 			)
 
