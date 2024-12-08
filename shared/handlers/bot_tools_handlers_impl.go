@@ -22,6 +22,60 @@ type BotToolsHandlerImpl struct {
 	utils         utils.Utils
 }
 
+// HandleUpdateUserOrder implements BotToolsHandler.
+func (b *BotToolsHandlerImpl) HandleUpdateUserOrder(data string, chatInfo dto.ChatInfoRequest) (string, error) {
+	// Parse the update request
+	var orderRequest req.UpdateUserOrderRequest
+	if err := json.Unmarshal([]byte(data), &orderRequest); err != nil {
+		logrus.WithError(err).Error("[HandleUpdateUserOrder] failed to unmarshal data")
+		return "", fmt.Errorf("failed to unmarshal data: %v", err)
+	}
+
+	if orderRequest.OrderCode == "" {
+		return "", fmt.Errorf("order code is required")
+	}
+
+	// Check user confirmation
+	if orderRequest.UserConfirmation != "si" {
+		return "", fmt.Errorf("order update not confirmed by user")
+	}
+
+	// Create an updated user order
+	order := &models.UserOrder{
+		OrderCode:       orderRequest.OrderCode,
+		DeliveryAddress: orderRequest.DeliveryAddress,
+		UserName:        orderRequest.UserName,
+		PhoneNumber:     orderRequest.PhoneNumber,
+		PaymentMethod:   orderRequest.PaymentMethod,
+		TotalPrice:      0,
+		BotWspNumber:    chatInfo.BotWspNumber,
+		SenderWspNumber: chatInfo.SenderWspNumber,
+		RestaurantID:    chatInfo.RestaurantID,
+		Status:          constants.OrderStatusPending,
+		OrderMenuItems:  make([]models.OrderMenuItem, 0),
+	}
+
+	// Iterate over the menu items and create an order menu item for each
+	for _, item := range orderRequest.MenuItems {
+		orderItem := models.OrderMenuItem{
+			ItemName: item.ItemName,
+			Quantity: item.Quantity,
+			Price:    item.Price,
+			Subtotal: item.Price * item.Quantity,
+		}
+		order.TotalPrice += item.Price * item.Quantity
+		order.OrderMenuItems = append(order.OrderMenuItems, orderItem)
+	}
+
+	// Update the user order
+	if err := b.userOrderRepo.UpdateUserOrderByCode(orderRequest.OrderCode, order); err != nil {
+		logrus.WithError(err).Error("[HandleUpdateUserOrder] failed to update user order")
+		return "", fmt.Errorf("failed to update user order: %v", err)
+	}
+
+	return orderRequest.OrderCode, nil
+}
+
 // HandleDeleteUserOrder implements BotToolsHandler.
 func (b *BotToolsHandlerImpl) HandleDeleteUserOrder(data string, chatInfo dto.ChatInfoRequest) (string, error) {
 	// Parse the data into a DeleteUserOrderRequest

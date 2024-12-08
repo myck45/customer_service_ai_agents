@@ -163,6 +163,10 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 					Type:     openai.ToolTypeFunction,
 					Function: b.botTools.DeleteUserOrder(),
 				},
+				{
+					Type:     openai.ToolTypeFunction,
+					Function: b.botTools.UpdateUserOrder(),
+				},
 			},
 		},
 	)
@@ -201,6 +205,23 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 					"🛵 ¡Tu pedido está en camino! 🛵\n"+
 					"🍽️ ¡Gracias por tu compra! 🍽️",
 				details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
+			)
+
+			return botResponse, nil
+		}
+
+		if toolCall.Function.Name == "update_user_order" {
+			orderCode, err := b.botToolHandler.HandleUpdateUserOrder(args, chatInfo)
+			if err != nil {
+				logrus.WithError(err).Error("failed to handle update user order")
+				return "", err
+			}
+
+			botResponse := fmt.Sprintf(
+				"🍔🍟 *Pedido Actualizado* 🍟🍔\n\n"+
+					"*El pedido con Código: %s a sido actualizado*\n\n"+
+					"🍽️ ¡Gracias por tu compra! 🍽️",
+				orderCode,
 			)
 
 			return botResponse, nil

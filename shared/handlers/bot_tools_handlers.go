@@ -9,6 +9,9 @@ type BotToolsHandler interface {
 	// BotToolsHandler handle the user order tool call from bot
 	HandleGetUserOrder(data string, chatInfo dto.ChatInfoRequest) (*models.UserOrder, error)
 
+	// BotToolsHandler handle the update user order tool call from bot
+	HandleUpdateUserOrder(data string, chatInfo dto.ChatInfoRequest) (string, error)
+
 	// BotToolsHandler handle the delete user order tool call from bot
 	HandleDeleteUserOrder(data string, chatInfo dto.ChatInfoRequest) (string, error)
 

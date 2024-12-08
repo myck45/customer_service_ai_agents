@@ -9,6 +9,9 @@ type BotTools interface {
 	// Capture user order
 	GetUserOrder() *openai.FunctionDefinition
 
+	// Update user order
+	UpdateUserOrder() *openai.FunctionDefinition
+
 	// Delete user order
 	DeleteUserOrder() *openai.FunctionDefinition
 }
