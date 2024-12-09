@@ -214,11 +214,13 @@ func (b *BotServiceImpl) HandleBotToolCall(toolCall openai.ToolCall, chatInfo dt
 				"- %s\n\n"+
 				"_este código es importante para rastrear tu pedido o para cancelarlo._\n\n"+
 				"*Dirección de Entrega*: %s\n"+
+				"*Registrado a Nombre de*: %s\n"+
+				"*Número de Teléfono*: %s\n"+
 				"*Método de Pago*: %s\n"+
 				"*Total*: $%d\n\n"+
 				"🛵 ¡Tu pedido está en camino! 🛵\n"+
 				"🍽️ ¡Gracias por tu compra! 🍽️",
-			details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
+			details, order.OrderCode, order.DeliveryAddress, order.UserName, order.PhoneNumber, order.PaymentMethod, order.TotalPrice,
 		)
 
 		return botResponse, nil
