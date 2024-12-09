@@ -13,7 +13,9 @@ type BotToolsImpl struct{}
 func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
 
 	schema := &jsonschema.Definition{
-		Type: jsonschema.Object,
+		Type:                 jsonschema.Object,
+		AdditionalProperties: false,
+		Required:             []string{"order_code", "user_confirmation", "menu_items", "delivery_address", "user_name", "phone_number", "payment_method"},
 		Properties: map[string]jsonschema.Definition{
 			"order_code": {
 				Type:        jsonschema.String,
@@ -27,8 +29,10 @@ func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
 			"menu_items": {
 				Type: jsonschema.Array,
 				Items: &jsonschema.Definition{
-					Type:        jsonschema.Object,
-					Description: "Ítems del menú solicitados por el usuario",
+					Type:                 jsonschema.Object,
+					Description:          "Ítems del menú solicitados por el usuario",
+					Required:             []string{"item_name", "quantity", "price"},
+					AdditionalProperties: false,
 					Properties: map[string]jsonschema.Definition{
 						"item_name": {
 							Type:        jsonschema.String,
@@ -43,8 +47,6 @@ func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
 							Description: "Precio del ítem del menú",
 						},
 					},
-					Required:             []string{"item_name", "quantity", "price"},
-					AdditionalProperties: false,
 				},
 			},
 			"delivery_address": {
