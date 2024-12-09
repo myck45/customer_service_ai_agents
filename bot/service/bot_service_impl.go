@@ -277,6 +277,11 @@ func (b *BotServiceImpl) PrepareChatMessages(chatHistory []models.ChatHistory, s
 		},
 	}
 
+	// Invert the chat history
+	for i, j := 0, len(chatHistory)-1; i < j; i, j = i+1, j-1 {
+		chatHistory[i], chatHistory[j] = chatHistory[j], chatHistory[i]
+	}
+
 	for _, chat := range chatHistory {
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
