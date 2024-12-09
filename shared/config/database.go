@@ -27,11 +27,12 @@ func DatabaseConnection() *gorm.DB {
 		password := os.Getenv("DB_PASSWORD")
 		dbname := os.Getenv("DB_NAME")
 
-		sqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require pgbouncer=true",
+		sqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
 			host, port, user, password, dbname)
 
 		gormConfig := &gorm.Config{
-			PrepareStmt: false,
+			PrepareStmt:          false,
+			DisableAutomaticPing: true,
 		}
 
 		var err error
