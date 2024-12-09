@@ -11,11 +11,10 @@ type BotToolsImpl struct{}
 
 // UpdateUserOrder implements BotTools.
 func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
-
 	schema := &jsonschema.Definition{
 		Type:                 jsonschema.Object,
 		AdditionalProperties: false,
-		Required:             []string{"order_code", "user_confirmation", "menu_items", "delivery_address", "user_name", "phone_number", "payment_method"},
+		Required:             []string{"order_code", "user_confirmation"},
 		Properties: map[string]jsonschema.Definition{
 			"order_code": {
 				Type:        jsonschema.String,
@@ -30,8 +29,8 @@ func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
 				Type: jsonschema.Array,
 				Items: &jsonschema.Definition{
 					Type:                 jsonschema.Object,
-					Description:          "Ítems del menú solicitados por el usuario",
-					Required:             []string{"item_name", "quantity", "price"},
+					Description:          "Ítems del menú a actualizar (opcional)",
+					Required:             []string{"item_name"},
 					AdditionalProperties: false,
 					Properties: map[string]jsonschema.Definition{
 						"item_name": {
@@ -40,37 +39,34 @@ func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
 						},
 						"quantity": {
 							Type:        jsonschema.Integer,
-							Description: "Cantidad del ítem del menú solicitada por el usuario",
+							Description: "Nueva cantidad del ítem (opcional)",
 						},
 						"price": {
 							Type:        jsonschema.Number,
-							Description: "Precio del ítem del menú",
+							Description: "Nuevo precio del ítem (opcional)",
 						},
 					},
 				},
 			},
 			"delivery_address": {
 				Type:        jsonschema.String,
-				Description: "Dirección de entrega del pedido",
-			},
-			"user_name": {
-				Type:        jsonschema.String,
-				Description: "Nombre del usuario que realiza el pedido",
+				Description: "Nueva dirección de entrega (opcional)",
 			},
 			"phone_number": {
 				Type:        jsonschema.String,
-				Description: "Número de teléfono del usuario que realiza el pedido",
+				Description: "Nuevo número de teléfono (opcional)",
 			},
 			"payment_method": {
-				Type: jsonschema.String,
-				Enum: []string{"efectivo", "transferencia"},
+				Type:        jsonschema.String,
+				Enum:        []string{"efectivo", "transferencia"},
+				Description: "Nuevo método de pago (opcional)",
 			},
 		},
 	}
 
 	return &openai.FunctionDefinition{
 		Name:        "update_user_order",
-		Description: "Actualiza el pedido del usuario, es necesario que el usuario proporcione el código del pedido a actualizar, la confirmación del usuario para actualizar el pedido, los ítems del menú solicitados, la dirección de entrega, su nombre, número de teléfono y método de pago, el método de pago solo puede ser efectivo o transferencia.",
+		Description: "Actualiza parcialmente un pedido existente. El usuario debe proporcionar el código de pedido y confirmación. Puede actualizar opcionalmente ítems, dirección, teléfono o método de pago.",
 		Parameters:  schema,
 		Strict:      true,
 	}
