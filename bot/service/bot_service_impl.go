@@ -168,7 +168,7 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 	)
 	if err != nil {
 		logrus.WithError(err).Error("failed to create chat completion")
-		return "", err
+		return botErrResp, err
 	}
 
 	if res.Choices[0].FinishReason == openai.FinishReasonToolCalls {
@@ -176,10 +176,10 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 		botResponse, err := b.HandleBotToolCall(toolCall, chatInfo)
 		if err != nil {
 			logrus.WithError(err).Error("failed to handle bot tool call")
-			return "", err
+			return botErrResp, err
 		}
-		return botResponse, nil
 
+		return botResponse, nil
 	}
 
 	botResponse := res.Choices[0].Message.Content
@@ -279,7 +279,7 @@ func (b *BotServiceImpl) PrepareChatMessages(chatHistory []models.ChatHistory, s
 		},
 	}
 
-	// Invert the chat history
+	// Invert the array - needed to pass to the bot in the correct order
 	for i, j := 0, len(chatHistory)-1; i < j; i, j = i+1, j-1 {
 		chatHistory[i], chatHistory[j] = chatHistory[j], chatHistory[i]
 	}
@@ -313,6 +313,8 @@ func (b *BotServiceImpl) SystemPrompt(botConfig req.BotConfig) (string, error) {
 - **Identidad**: %s 
 
 Proporcionas información detallada sobre el menú, platos, y datos clave del restaurante usando un sistema de búsqueda semántica que enriquece las respuestas con contexto relevante.
+
+Te debes comportar de forma natural, como si fueras un asistente humano en el restaurante, siempre amigable y servicial.
 
 **Capacidades y Comportamiento:**
 - Respondes de forma clara y amigable, ajustándote a la consulta del usuario.
