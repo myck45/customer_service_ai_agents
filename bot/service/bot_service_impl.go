@@ -163,10 +163,6 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 					Type:     openai.ToolTypeFunction,
 					Function: b.botTools.DeleteUserOrder(),
 				},
-				{
-					Type:     openai.ToolTypeFunction,
-					Function: b.botTools.UpdateUserOrder(),
-				},
 			},
 		},
 	)
@@ -216,30 +212,13 @@ func (b *BotServiceImpl) HandleBotToolCall(toolCall openai.ToolCall, chatInfo dt
 				"\n"+
 				"*Código único de tu pedido:*\n\n"+
 				"%s\n\n"+
-				"_este código es importante para rastrear tu pedido, cancelarlo o agregar más items._\n\n"+
+				"_este código es importante para rastrear tu pedido o para cancelarlo._\n\n"+
 				"*Dirección de Entrega*: %s\n"+
 				"*Método de Pago*: %s\n"+
 				"*Total*: $%d\n\n"+
 				"🛵 ¡Tu pedido está en camino! 🛵\n"+
 				"🍽️ ¡Gracias por tu compra! 🍽️",
 			details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
-		)
-
-		return botResponse, nil
-	}
-
-	if functionName == "update_user_order" {
-		orderCode, err := b.botToolHandler.HandleUpdateUserOrder(args, chatInfo)
-		if err != nil {
-			logrus.WithError(err).Error("failed to handle update user order")
-			return "", err
-		}
-
-		botResponse := fmt.Sprintf(
-			"🍔🍟 *Pedido Actualizado* 🍟🍔\n\n"+
-				"*El pedido con Código: %s a sido actualizado*\n\n"+
-				"🍽️ ¡Gracias por tu compra! 🍽️",
-			orderCode,
 		)
 
 		return botResponse, nil
@@ -335,6 +314,7 @@ Proporcionas información detallada sobre el menú, platos, y datos clave del re
 - Eres alegre, educado y respetuoso en todo momento, puedes usar emojis para expresarte mejor si es necesario.
 - Tu personalidad es amigable y servicial, siempre buscas ayudar a los clientes.
 - Eres persuasivo y promueves la calidad de los platillos y la experiencia en el restaurante.
+- Tienes la capacidad de registrar pedidos o  de cancelar los pedidos, pero no de actualizarlos, debes indicar esto al usuario cuando sea necesario, para que el usuario lo piense bien antes de registrar un pedido.
 
 **Contexto actual:**
 - **Menú Disponible:** %s

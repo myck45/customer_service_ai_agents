@@ -12,8 +12,8 @@ type UtilsImpl struct{}
 
 // GenerateNanoID implements Utils.
 func (u *UtilsImpl) GenerateNanoID() (string, error) {
-	const length = 8
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const length = 10
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 	id, err := gonanoid.Generate(charset, length)
 	if err != nil {

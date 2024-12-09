@@ -9,69 +9,6 @@ import (
 
 type BotToolsImpl struct{}
 
-// UpdateUserOrder implements BotTools.
-func (b *BotToolsImpl) UpdateUserOrder() *openai.FunctionDefinition {
-	schema := &jsonschema.Definition{
-		Type:                 jsonschema.Object,
-		AdditionalProperties: false,
-		Required:             []string{"order_code", "user_confirmation"},
-		Properties: map[string]jsonschema.Definition{
-			"order_code": {
-				Type:        jsonschema.String,
-				Description: "Código del pedido a actualizar",
-			},
-			"user_confirmation": {
-				Type:        jsonschema.String,
-				Description: "Confirmación del usuario para actualizar el pedido",
-				Enum:        []string{"si", "no"},
-			},
-			"menu_items": {
-				Type: jsonschema.Array,
-				Items: &jsonschema.Definition{
-					Type:                 jsonschema.Object,
-					Description:          "Ítems del menú a actualizar (opcional)",
-					Required:             []string{"item_name"},
-					AdditionalProperties: false,
-					Properties: map[string]jsonschema.Definition{
-						"item_name": {
-							Type:        jsonschema.String,
-							Description: "Nombre del ítem del menú",
-						},
-						"quantity": {
-							Type:        jsonschema.Integer,
-							Description: "Nueva cantidad del ítem (opcional)",
-						},
-						"price": {
-							Type:        jsonschema.Number,
-							Description: "Nuevo precio del ítem (opcional)",
-						},
-					},
-				},
-			},
-			"delivery_address": {
-				Type:        jsonschema.String,
-				Description: "Nueva dirección de entrega (opcional)",
-			},
-			"phone_number": {
-				Type:        jsonschema.String,
-				Description: "Nuevo número de teléfono (opcional)",
-			},
-			"payment_method": {
-				Type:        jsonschema.String,
-				Enum:        []string{"efectivo", "transferencia"},
-				Description: "Nuevo método de pago (opcional)",
-			},
-		},
-	}
-
-	return &openai.FunctionDefinition{
-		Name:        "update_user_order",
-		Description: "Actualiza parcialmente un pedido existente. El usuario debe proporcionar el código de pedido y confirmación. Puede actualizar opcionalmente ítems, dirección, teléfono o método de pago.",
-		Parameters:  schema,
-		Strict:      true,
-	}
-}
-
 // getUserOrder implements BotTools.
 func (b *BotToolsImpl) GetUserOrder() *openai.FunctionDefinition {
 	// schema, err := jsonschema.GenerateSchemaForType(schemas.UserOrderFunctionSchema{})
