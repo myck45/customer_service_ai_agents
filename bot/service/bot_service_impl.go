@@ -177,77 +177,97 @@ func (b *BotServiceImpl) GenerateBotResponse(ctx context.Context, messages []ope
 
 	if res.Choices[0].FinishReason == openai.FinishReasonToolCalls {
 		toolCall := res.Choices[0].Message.ToolCalls[0]
-		args := toolCall.Function.Arguments
-
-		if toolCall.Function.Name == "get_user_order" {
-			order, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
-			if err != nil {
-				logrus.WithError(err).Error("failed to handle user order")
-				return "", err
-			}
-
-			var details string
-			for _, item := range order.OrderMenuItems {
-				details += fmt.Sprintf("- %s (x%d) $%d\n", item.ItemName, item.Quantity, item.Subtotal)
-			}
-
-			botResponse := fmt.Sprintf(
-				"🍔🍟 *Pedido Realizado* 🍟🍔\n\n"+
-					"*Detalles del Pedido:*\n\n"+
-					"%s"+
-					"\n"+
-					"*Código único de tu pedido:*\n\n"+
-					"%s\n\n"+
-					"_este código es importante para rastrear tu pedido, cancelarlo o agregar más items._\n\n"+
-					"*Dirección de Entrega*: %s\n"+
-					"*Método de Pago*: %s\n"+
-					"*Total*: $%d\n\n"+
-					"🛵 ¡Tu pedido está en camino! 🛵\n"+
-					"🍽️ ¡Gracias por tu compra! 🍽️",
-				details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
-			)
-
-			return botResponse, nil
+		botResponse, err := b.HandleBotToolCall(toolCall, chatInfo)
+		if err != nil {
+			logrus.WithError(err).Error("failed to handle bot tool call")
+			return "", err
 		}
+		return botResponse, nil
 
-		if toolCall.Function.Name == "update_user_order" {
-			orderCode, err := b.botToolHandler.HandleUpdateUserOrder(args, chatInfo)
-			if err != nil {
-				logrus.WithError(err).Error("failed to handle update user order")
-				return "", err
-			}
-
-			botResponse := fmt.Sprintf(
-				"🍔🍟 *Pedido Actualizado* 🍟🍔\n\n"+
-					"*El pedido con Código: %s a sido actualizado*\n\n"+
-					"🍽️ ¡Gracias por tu compra! 🍽️",
-				orderCode,
-			)
-
-			return botResponse, nil
-		}
-
-		if toolCall.Function.Name == "delete_user_order" {
-			orderCode, err := b.botToolHandler.HandleDeleteUserOrder(args, chatInfo)
-			if err != nil {
-				logrus.WithError(err).Error("failed to handle delete user order")
-				return "", err
-			}
-
-			botResponse := fmt.Sprintf(
-				"🚫 ¡Tu pedido ha sido cancelado! 🚫\n\n"+
-					"*El pedido con Código: %s a sido cancelado*\n\n"+
-					"🍟 ¡Gracias por tu preferencia! 🍟",
-				orderCode,
-			)
-
-			return botResponse, nil
-		}
 	}
 
 	botResponse := res.Choices[0].Message.Content
 
 	return botResponse, nil
+}
+
+// HandleBotToolCall implements BotService.
+func (b *BotServiceImpl) HandleBotToolCall(toolCall openai.ToolCall, chatInfo dto.ChatInfoRequest) (string, error) {
+
+	functionName := toolCall.Function.Name
+	args := toolCall.Function.Arguments
+
+	if functionName == "get_user_order" {
+		order, err := b.botToolHandler.HandleGetUserOrder(args, chatInfo)
+		if err != nil {
+			logrus.WithError(err).Error("failed to handle user order")
+			return "", err
+		}
+
+		var details string
+		for _, item := range order.OrderMenuItems {
+			details += fmt.Sprintf("- %s (x%d) $%d\n", item.ItemName, item.Quantity, item.Subtotal)
+		}
+
+		botResponse := fmt.Sprintf(
+			"🍔🍟 *Pedido Realizado* 🍟🍔\n\n"+
+				"*Detalles del Pedido:*\n\n"+
+				"%s"+
+				"\n"+
+				"*Código único de tu pedido:*\n\n"+
+				"%s\n\n"+
+				"_este código es importante para rastrear tu pedido, cancelarlo o agregar más items._\n\n"+
+				"*Dirección de Entrega*: %s\n"+
+				"*Método de Pago*: %s\n"+
+				"*Total*: $%d\n\n"+
+				"🛵 ¡Tu pedido está en camino! 🛵\n"+
+				"🍽️ ¡Gracias por tu compra! 🍽️",
+			details, order.OrderCode, order.DeliveryAddress, order.PaymentMethod, order.TotalPrice,
+		)
+
+		return botResponse, nil
+	}
+
+	if functionName == "update_user_order" {
+		orderCode, err := b.botToolHandler.HandleUpdateUserOrder(args, chatInfo)
+		if err != nil {
+			logrus.WithError(err).Error("failed to handle update user order")
+			return "", err
+		}
+
+		botResponse := fmt.Sprintf(
+			"🍔🍟 *Pedido Actualizado* 🍟🍔\n\n"+
+				"*El pedido con Código: %s a sido actualizado*\n\n"+
+				"🍽️ ¡Gracias por tu compra! 🍽️",
+			orderCode,
+		)
+
+		return botResponse, nil
+	}
+
+	if functionName == "delete_user_order" {
+		orderCode, err := b.botToolHandler.HandleDeleteUserOrder(args, chatInfo)
+		if err != nil {
+			logrus.WithError(err).Error("failed to handle delete user order")
+			return "", err
+		}
+
+		botResponse := fmt.Sprintf(
+			"🚫 ¡Tu pedido ha sido cancelado! 🚫\n\n"+
+				"*El pedido con Código: %s a sido cancelado*\n\n"+
+				"🍟 ¡Gracias por tu preferencia! 🍟",
+			orderCode,
+		)
+
+		return botResponse, nil
+	}
+
+	defaultResponse := fmt.Sprintf(
+		"Hubo un error al procesar tu solicitud, por favor intenta de nuevo más tarde. 😔💔\n\n" +
+			"Si necesitas ayuda, por favor comunícate con nuestro equipo de soporte. 📞📧",
+	)
+
+	return defaultResponse, nil
 }
 
 // PrepareChatMessages implements BotService.

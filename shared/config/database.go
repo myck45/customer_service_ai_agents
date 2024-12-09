@@ -27,7 +27,7 @@ func DatabaseConnection() *gorm.DB {
 		password := os.Getenv("DB_PASSWORD")
 		dbname := os.Getenv("DB_NAME")
 
-		sqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
+		sqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require&pgbouncer=true",
 			host, port, user, password, dbname)
 
 		gormConfig := &gorm.Config{

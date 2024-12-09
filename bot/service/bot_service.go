@@ -14,4 +14,5 @@ type BotService interface {
 	BotResponse(chat *req.TwilioWebhook) error
 	SystemPrompt(botConfig req.BotConfig) (string, error)
 	PrepareChatMessages(chatHistory []models.ChatHistory, semanticContext []dto.MenuSearchResponse, botInfo req.BotInfo) ([]openai.ChatCompletionMessage, error)
+	HandleBotToolCall(toolCall openai.ToolCall, chatInfo dto.ChatInfoRequest) (string, error)
 }
