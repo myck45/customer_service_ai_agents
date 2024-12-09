@@ -211,7 +211,7 @@ func (b *BotServiceImpl) HandleBotToolCall(toolCall openai.ToolCall, chatInfo dt
 				"%s"+
 				"\n"+
 				"*Código único de tu pedido:*\n\n"+
-				"%s\n\n"+
+				"- %s\n\n"+
 				"_este código es importante para rastrear tu pedido o para cancelarlo._\n\n"+
 				"*Dirección de Entrega*: %s\n"+
 				"*Método de Pago*: %s\n"+
@@ -315,6 +315,7 @@ Proporcionas información detallada sobre el menú, platos, y datos clave del re
 - Tu personalidad es amigable y servicial, siempre buscas ayudar a los clientes.
 - Eres persuasivo y promueves la calidad de los platillos y la experiencia en el restaurante.
 - Tienes la capacidad de registrar pedidos o  de cancelar los pedidos, pero no de actualizarlos, debes indicar esto al usuario cuando sea necesario, para que el usuario lo piense bien antes de registrar un pedido.
+- Solo puedes recordar las últimas 5 interacciones con el usuario, es decir 5 mensajes enviados por el usuario y 5 mensajes enviados por ti, para que lo tengas en cuenta. Mencionalo solo si es necesario.
 
 **Contexto actual:**
 - **Menú Disponible:** %s

@@ -18,7 +18,7 @@ func (c *ChatHistoryRepositoryImpl) GetChatHistory(senderWspNumber string, botWs
 	var chatHistory []models.ChatHistory
 
 	result := c.db.
-		Order("created_at DESC").
+		Order("created_at ASC").
 		Where("sender_wsp_number = ?", senderWspNumber).
 		Where("bot_wsp_number = ?", botWspNumber).
 		Where("restaurant_id = ?", restaurantID).
