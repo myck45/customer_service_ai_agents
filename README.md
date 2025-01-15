@@ -15,7 +15,7 @@ tittle: Restaurants Menu DB
 
 erDiagram
 
-    USER {
+    USER {ID
         uint id PK
         string name
         string last_name
